@@ -47,22 +47,19 @@ namespace {
         if (Poco::Environment::has(EXTENSION_FOLDER_ENV_VAR)) {
             return Poco::Environment::get(EXTENSION_FOLDER_ENV_VAR);
         }
-        Poco::File home(fmt::format("{}{}", Poco::Path::home(), EXTENSION_FOLDER));
-        if (home.exists() && home.isDirectory()) {
-            return home.path();
-        }
 #ifdef _WIN32
+        std::string extensionFolder = fmt::format(".{}", Poco::Path::separator());
         wchar_t wpath[MAX_PATH];
-        if (SUCCEEDED(SHGetFolderPathW(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, wpath))) {
-            std::string localAppData;
-            Poco::UnicodeConverter::toUTF8(wpath, localAppData);
-            Poco::File extensionFolder(fmt::format("{}{}{}", localAppData, Poco::Path::separator(), EXTENSION_FOLDER));
-            if (extensionFolder.exists() && extensionFolder.isDirectory()) {
-                return extensionFolder.path();
-            }
+        if (!SUCCEEDED(SHGetFolderPathW(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, wpath))) {
+            return extensionFolder;
         }
+        Poco::UnicodeConverter::toUTF8(wpath, extensionFolder);
+#else
+        std::string extensionFolder = Poco::Environment::get("HOME", ".");
 #endif
-        return fmt::format("{}{}", Poco::Path::current(), EXTENSION_FOLDER);
+        Poco::File file(fmt::format("{}{}{}", extensionFolder, Poco::Path::separator(), EXTENSION_FOLDER));
+        file.createDirectories();
+        return file.path();
     }
 
     std::string getStringProperty(Poco::AutoPtr<Poco::Util::PropertyFileConfiguration> config, const std::string& key) {
@@ -176,7 +173,7 @@ namespace {
             respond(output, RESPONSE_TYPE_OK, response.data);
             return;
         }
-        else if (request.command == "player" || request.command == "event") {
+        else if (request.command == "infantry" || request.command == "infantry_positions" || request.command == "vehicles" || request.command == "vehicle_positions" || request.command == "events_connections" || request.command == "events_get_in_out" || request.command == "events_projectile" || request.command == "events_downed" || request.command == "events_missile") {
             requests.push(request);
             respond(output, RESPONSE_TYPE_OK, EMPTY_SQF_DATA);
             return;
