@@ -151,6 +151,16 @@ namespace r3 {
 
                     response.data = std::to_string(replayId);
                 }
+                else if (request.command == "update_replay" && realParamsSize == 2) {
+
+                    uint32_t replayId = parseUnsigned(request.params[1]);
+                    double missionTime = parseFloat(request.params[2]);
+
+                    *session << "UPDATE missions SET last_event_time = UTC_TIMESTAMP(), last_mission_time = ? WHERE id = ? LIMIT 1",
+                        Poco::Data::Keywords::use(missionTime),
+                        Poco::Data::Keywords::use(replayId),
+                        Poco::Data::Keywords::now;
+                }
                 else if (request.command == "infantry" && realParamsSize == 11) {
 
                     uint32_t replayId = parseUnsigned(request.params[1]);
@@ -192,7 +202,7 @@ namespace r3 {
                     double missionTime = parseFloat(request.params[7]);
 
                     //log::logger->debug("Inserting into 'infantry' values id '{}', name '{}'.", id, name);
-                    *session << "INSERT INTO infantry_positions(mission, entity_id, x, y, direction, key_frame, mission_time, added_on) VALUES (?,?,?,?,?,?,?,UTC_TIMESTAMP())",
+                    *session << "INSERT INTO infantry_positions(mission, entity_id, x, y, direction, key_frame, mission_time) VALUES (?,?,?,?,?,?,?)",
                         Poco::Data::Keywords::use(replayId),
                         Poco::Data::Keywords::use(entityId),
                         Poco::Data::Keywords::use(posX),
@@ -236,7 +246,7 @@ namespace r3 {
                     double missionTime = parseFloat(request.params[11]);
 
                     //log::logger->debug("Inserting into 'infantry' values id '{}', name '{}'.", id, name);
-                    *session << "INSERT INTO vehicle_positions(mission, entity_id, x, y, z, direction, key_frame, driver, crew, cargo, mission_time, added_on) VALUES (?,?,?,?,?,?,?,?,?,?,?,UTC_TIMESTAMP())",
+                    *session << "INSERT INTO vehicle_positions(mission, entity_id, x, y, z, direction, key_frame, driver, crew, cargo, mission_time) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
                         Poco::Data::Keywords::use(replayId),
                         Poco::Data::Keywords::use(entityId),
                         Poco::Data::Keywords::use(posX),
