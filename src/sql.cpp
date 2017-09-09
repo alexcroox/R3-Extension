@@ -156,6 +156,8 @@ namespace r3 {
                     uint32_t replayId = parseUnsigned(request.params[1]);
                     double missionTime = parseFloat(request.params[2]);
 
+                    log::logger->debug("Inserting into 'update_replay' values last_mission_time '{}', id '{}'.", missionTime, replayId);
+
                     *session << "UPDATE missions SET last_event_time = UTC_TIMESTAMP(), last_mission_time = ? WHERE id = ? LIMIT 1",
                         Poco::Data::Keywords::use(missionTime),
                         Poco::Data::Keywords::use(replayId),
@@ -177,7 +179,7 @@ namespace r3 {
                     std::string unitData = request.params[12];
                     double missionTime = parseFloat(request.params[13]);
 
-                    log::logger->debug("Inserting into 'infantry'");
+                    log::logger->debug("Inserting into 'infantry' values weapon '{}', launcher '{}', data '{}'.", unitWeapon, unitLauncher, unitData);
 
                     *session << "INSERT INTO infantry(mission, player_id, entity_id, name, faction, class, `group`, leader, icon, weapon, launcher, data, mission_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
                         Poco::Data::Keywords::use(replayId),
@@ -205,7 +207,7 @@ namespace r3 {
                     uint32_t keyFrame = parseUnsigned(request.params[6]);
                     double missionTime = parseFloat(request.params[7]);
 
-                    //log::logger->debug("Inserting into 'infantry' values id '{}', name '{}'.", id, name);
+                    log::logger->debug("Inserting into 'infantry_positions' values mission '{}', time '{}', frame '{}'.", replayId, missionTime, keyFrame);
                     *session << "INSERT INTO infantry_positions(mission, entity_id, x, y, direction, key_frame, mission_time) VALUES (?,?,?,?,?,?,?)",
                         Poco::Data::Keywords::use(replayId),
                         Poco::Data::Keywords::use(entityId),
@@ -249,7 +251,7 @@ namespace r3 {
                     std::string cargo = request.params[10];
                     double missionTime = parseFloat(request.params[11]);
 
-                    //log::logger->debug("Inserting into 'infantry' values id '{}', name '{}'.", id, name);
+                    log::logger->debug("Inserting into 'vehicle_positions' values mission '{}', time '{}'.", replayId, missionTime);
                     *session << "INSERT INTO vehicle_positions(mission, entity_id, x, y, z, direction, key_frame, driver, crew, cargo, mission_time) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
                         Poco::Data::Keywords::use(replayId),
                         Poco::Data::Keywords::use(entityId),
@@ -290,7 +292,7 @@ namespace r3 {
                     uint32_t entityUnit = parseUnsigned(request.params[4]);
                     uint32_t entityVehicle = parseUnsigned(request.params[5]);
 
-                    //log::logger->debug("Inserting into 'events' values replayId '{}', playerId '{}', type '{}', value '{}', missionTime '{}'.", replayId, playerId, type, value, missionTime);
+                    log::logger->debug("Inserting into 'events_get_in_out' values mission '{}', mission_time '{}', type '{}'.", replayId, missionTime, type);
 
                     *session << "INSERT INTO events_get_in_out(mission, mission_time, type, entity_unit, entity_vehicle) VALUES (?, ?, ?, ?, ?)",
                         Poco::Data::Keywords::use(replayId),
@@ -310,7 +312,7 @@ namespace r3 {
                     double posY = parseFloat(request.params[6]);
                     std::string projectileName = request.params[7];
 
-                    //log::logger->debug("Inserting into 'events' values replayId '{}', playerId '{}', type '{}', value '{}', missionTime '{}'.", replayId, playerId, type, value, missionTime);
+                    log::logger->debug("Inserting into 'events_projectile' values replayId '{}', entity_attacker '{}', type '{}', projectile_name '{}'.", replayId, entitAttacker, grenadeType, projectileName);
 
                     *session << "INSERT INTO events_projectile(mission, mission_time, type, entity_attacker, x, y, projectile_name) VALUES (?, ?, ?, ?, ?, ?, ?)",
                         Poco::Data::Keywords::use(replayId),
@@ -333,7 +335,7 @@ namespace r3 {
                     uint32_t attackerDistance = parseUnsigned(request.params[7]);
                     std::string weapon = request.params[8];
 
-                    //log::logger->debug("Inserting into 'events' values replayId '{}', playerId '{}', type '{}', value '{}', missionTime '{}'.", replayId, playerId, type, value, missionTime);
+                    log::logger->debug("Inserting into 'events_downed' values mission '{}', entity_attacker '{}', type '{}', same_faction '{}', weapon '{}'.", replayId, entitAttacker, type, sameFaction, weapon);
 
                     *session << "INSERT INTO events_downed(mission, mission_time, type, entity_attacker, entity_victim, same_faction, distance, weapon) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                         Poco::Data::Keywords::use(replayId),
@@ -355,7 +357,7 @@ namespace r3 {
                     uint32_t entityVictim = parseUnsigned(request.params[5]);
                     std::string weapon = request.params[6];
 
-                    //log::logger->debug("Inserting into 'events' values replayId '{}', playerId '{}', type '{}', value '{}', missionTime '{}'.", replayId, playerId, type, value, missionTime);
+                    log::logger->debug("Inserting into 'events_missile' values replayId '{}', type '{}', weapon '{}'.", replayId, type, weapon);
 
                     *session << "INSERT INTO events_missile(mission, mission_time, type, entity_attacker, entity_victim, weapon) VALUES (?, ?, ?, ?, ?, ?)",
                         Poco::Data::Keywords::use(replayId),
