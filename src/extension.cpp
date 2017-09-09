@@ -23,7 +23,7 @@ namespace extension {
 namespace {
     const std::string EXTENSION_FOLDER_ENV_VAR = "R3_EXTENSION_HOME";
     const std::string EXTENSION_FOLDER = "R3Extension";
-    const std::string CONFIG_FILE = "config.properties";
+    const std::string CONFIG_FILE = "config-dev.properties";
     const std::string DEFAULT_REQUEST_PARAM_SEPARATOR = "`";
 
     Queue<Request> requests;
