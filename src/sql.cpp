@@ -207,7 +207,7 @@ namespace r3 {
                     uint32_t keyFrame = parseUnsigned(request.params[6]);
                     double missionTime = parseFloat(request.params[7]);
 
-                    log::logger->debug("Inserting into 'infantry_positions' values mission '{}', time '{}', frame '{}'.", replayId, missionTime, keyFrame);
+                    //log::logger->debug("Inserting into 'infantry_positions' values mission '{}', time '{}', frame '{}'.", replayId, missionTime, keyFrame);
                     *session << "INSERT INTO infantry_positions(mission, entity_id, x, y, direction, key_frame, mission_time) VALUES (?,?,?,?,?,?,?)",
                         Poco::Data::Keywords::use(replayId),
                         Poco::Data::Keywords::use(entityId),
@@ -251,7 +251,7 @@ namespace r3 {
                     std::string cargo = request.params[10];
                     double missionTime = parseFloat(request.params[11]);
 
-                    log::logger->debug("Inserting into 'vehicle_positions' values mission '{}', time '{}'.", replayId, missionTime);
+                    //log::logger->debug("Inserting into 'vehicle_positions' values mission '{}', time '{}'.", replayId, missionTime);
                     *session << "INSERT INTO vehicle_positions(mission, entity_id, x, y, z, direction, key_frame, driver, crew, cargo, mission_time) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
                         Poco::Data::Keywords::use(replayId),
                         Poco::Data::Keywords::use(entityId),
