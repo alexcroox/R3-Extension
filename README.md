@@ -13,6 +13,10 @@ Built for Windows or Linux game servers.
     <img width="100" src="http://i0.kym-cdn.com/photos/images/original/001/243/213/52a.png" alt="Discord">
 </a>
 
+### Special thanks
+
+[ARK] Kami for building this thing in the first place and allowing me to ditch extdb!
+
 # Manually build for Windows
 
 ## Dependecies
