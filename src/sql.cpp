@@ -197,7 +197,7 @@ namespace r3 {
                         Poco::Data::Keywords::use(missionTime),
                         Poco::Data::Keywords::now;
                 }
-                else if (request.command == "infantry_positions" && realParamsSize == 7) {
+                else if (request.command == "infantry_positions" && realParamsSize == 8) {
 
                     uint32_t replayId = parseUnsigned(request.params[1]);
                     uint32_t entityId = parseUnsigned(request.params[2]);
@@ -205,16 +205,18 @@ namespace r3 {
                     double posY = parseFloat(request.params[4]);
                     uint32_t direction = parseUnsigned(request.params[5]);
                     uint32_t keyFrame = parseUnsigned(request.params[6]);
-                    double missionTime = parseFloat(request.params[7]);
+                    uint32_t isDead = parseUnsigned(request.params[7]);
+                    double missionTime = parseFloat(request.params[8]);
 
                     //log::logger->debug("Inserting into 'infantry_positions' values mission '{}', time '{}', frame '{}'.", replayId, missionTime, keyFrame);
-                    *session << "INSERT INTO infantry_positions(mission, entity_id, x, y, direction, key_frame, mission_time) VALUES (?,?,?,?,?,?,?)",
+                    *session << "INSERT INTO infantry_positions(mission, entity_id, x, y, direction, key_frame, is_dead, mission_time) VALUES (?,?,?,?,?,?,?,?)",
                         Poco::Data::Keywords::use(replayId),
                         Poco::Data::Keywords::use(entityId),
                         Poco::Data::Keywords::use(posX),
                         Poco::Data::Keywords::use(posY),
                         Poco::Data::Keywords::use(direction),
                         Poco::Data::Keywords::use(keyFrame),
+                        Poco::Data::Keywords::use(isDead),
                         Poco::Data::Keywords::use(missionTime),
                         Poco::Data::Keywords::now;
                 }
@@ -237,7 +239,7 @@ namespace r3 {
                         Poco::Data::Keywords::use(missionTime),
                         Poco::Data::Keywords::now;
                 }
-                else if (request.command == "vehicle_positions" && realParamsSize == 11) {
+                else if (request.command == "vehicle_positions" && realParamsSize == 12) {
 
                     uint32_t replayId = parseUnsigned(request.params[1]);
                     uint32_t entityId = parseUnsigned(request.params[2]);
@@ -249,10 +251,11 @@ namespace r3 {
                     std::string driver = request.params[8];
                     std::string crew = request.params[9];
                     std::string cargo = request.params[10];
-                    double missionTime = parseFloat(request.params[11]);
+                    uint32_t isDead = parseUnsigned(request.params[11]);
+                    double missionTime = parseFloat(request.params[12]);
 
                     //log::logger->debug("Inserting into 'vehicle_positions' values mission '{}', time '{}'.", replayId, missionTime);
-                    *session << "INSERT INTO vehicle_positions(mission, entity_id, x, y, z, direction, key_frame, driver, crew, cargo, mission_time) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                    *session << "INSERT INTO vehicle_positions(mission, entity_id, x, y, z, direction, key_frame, driver, crew, cargo, is_dead, mission_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
                         Poco::Data::Keywords::use(replayId),
                         Poco::Data::Keywords::use(entityId),
                         Poco::Data::Keywords::use(posX),
@@ -263,6 +266,7 @@ namespace r3 {
                         Poco::Data::Keywords::use(driver),
                         Poco::Data::Keywords::use(crew),
                         Poco::Data::Keywords::use(cargo),
+                        Poco::Data::Keywords::use(isDead),
                         Poco::Data::Keywords::use(missionTime),
                         Poco::Data::Keywords::now;
                 }
