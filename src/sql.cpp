@@ -324,25 +324,27 @@ namespace r3 {
                         Poco::Data::Keywords::use(projectileName),
                         Poco::Data::Keywords::now;
                 }
-                else if (request.command == "events_downed" && realParamsSize == 8) {
+                else if (request.command == "events_downed" && realParamsSize == 9) {
 
                     uint32_t replayId = parseUnsigned(request.params[1]);
                     double missionTime = parseFloat(request.params[2]);
                     std::string type = request.params[3];
                     uint32_t entitAttacker = parseUnsigned(request.params[4]);
                     uint32_t entityVictim = parseUnsigned(request.params[5]);
-                    uint32_t sameFaction = parseUnsigned(request.params[6]);
-                    uint32_t attackerDistance = parseUnsigned(request.params[7]);
-                    std::string weapon = request.params[8];
+                    uint32_t attackerVehicle = parseUnsigned(request.params[6]);
+                    uint32_t sameFaction = parseUnsigned(request.params[7]);
+                    uint32_t attackerDistance = parseUnsigned(request.params[8]);
+                    std::string weapon = request.params[9];
 
                     log::logger->debug("Inserting into 'events_downed' values mission '{}', entity_attacker '{}', type '{}', same_faction '{}', weapon '{}'.", replayId, entitAttacker, type, sameFaction, weapon);
 
-                    *session << "INSERT INTO events_downed(mission, mission_time, type, entity_attacker, entity_victim, same_faction, distance, weapon) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    *session << "INSERT INTO events_downed(mission, mission_time, type, entity_attacker, entity_victim, attacker_vehicle, same_faction, distance, weapon) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                         Poco::Data::Keywords::use(replayId),
                         Poco::Data::Keywords::use(missionTime),
                         Poco::Data::Keywords::use(type),
                         Poco::Data::Keywords::use(entitAttacker),
                         Poco::Data::Keywords::use(entityVictim),
+                        Poco::Data::Keywords::use(attackerVehicle),
                         Poco::Data::Keywords::use(sameFaction),
                         Poco::Data::Keywords::use(attackerDistance),
                         Poco::Data::Keywords::use(weapon),
