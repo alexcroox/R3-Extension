@@ -121,7 +121,7 @@ namespace r3 {
             log::logger->trace("Request command '{}' params size '{}'!", request.command, request.params.size());
 
             try {
-                if (request.command == "replay" && realParamsSize == 6) {
+                if (request.command == "replay" && realParamsSize == 7) {
 
                     std::string missionName = request.params[1];
                     std::string missionDisplayName = request.params[2];
@@ -129,16 +129,18 @@ namespace r3 {
                     std::string author = request.params[4];
                     double dayTime = getNumericValue(request.params, 5);
                     std::string addonVersion = request.params[6];
+                    std::string fileName = request.params[7];
 
                     log::logger->debug("Inserting into 'missions' values missionName '{}', terrain '{}', dayTime '{}', author '{}', addonVersion '{}'.", missionName, map, dayTime, author, addonVersion);
 
-                    *session << "INSERT INTO missions(name, display_name, terrain, author, day_time, created_at, addon_version) VALUES(?, ?, ?, ?, ?, UTC_TIMESTAMP(), ?)",
+                    *session << "INSERT INTO missions(name, display_name, terrain, author, day_time, created_at, addon_version, file_name) VALUES(?, ?, ?, ?, ?, UTC_TIMESTAMP(), ?, ?)",
                         Poco::Data::Keywords::use(missionName),
                         Poco::Data::Keywords::use(missionDisplayName),
                         Poco::Data::Keywords::use(map),
                         Poco::Data::Keywords::use(author),
                         Poco::Data::Keywords::use(dayTime),
                         Poco::Data::Keywords::use(addonVersion),
+                        Poco::Data::Keywords::use(fileName),
                         Poco::Data::Keywords::now;
 
                     uint32_t replayId = 0;
