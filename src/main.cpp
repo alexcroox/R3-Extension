@@ -23,9 +23,14 @@ BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
 }
 
 extern "C" {
+    __declspec(dllexport) void __stdcall RVExtensionVersion(char *output, int outputSize);
     __declspec(dllexport) void __stdcall RVExtension(char *output, int outputSize, const char *function);
     __declspec(dllexport) int __stdcall RVExtensionArgs(char *output, int outputSize, const char *function, const char **args, int argCnt);
 };
+
+void __stdcall RVExtensionVersion(char *output, int outputSize) {
+    strncpy_s(output, outputSize, R3_EXTENSION_VERSION, _TRUNCATE);
+}
 
 void __stdcall RVExtension(char *output, int outputSize, const char *function) {
     outputSize -= 1;
@@ -41,6 +46,7 @@ int __stdcall RVExtensionArgs(char *output, int outputSize, const char *function
 #else
 
 extern "C" {
+    void RVExtensionVersion(char *output, int outputSize);
     void RVExtension(char *output, int outputSize, const char *function);
     int RVExtensionArgs(char *output, int outputSize, const char *function, const char **args, int argCnt);
 }
