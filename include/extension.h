@@ -5,7 +5,7 @@
 #include "Queue/Queue.h"
 
 
-#define R3_EXTENSION_VERSION       "1.0.0"
+#define R3_EXTENSION_VERSION       "2.0.0"
 
 namespace r3 {
 
