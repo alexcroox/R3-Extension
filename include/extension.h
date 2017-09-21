@@ -11,6 +11,9 @@ namespace r3 {
 
     const std::string REQUEST_COMMAND_POISON = "poison";
 
+    const int RESPONSE_RETURN_CODE_ERROR = -1;
+    const int RESPONSE_RETURN_CODE_OK = 0;
+
     const std::string RESPONSE_TYPE_ERROR = "error";
     const std::string RESPONSE_TYPE_OK = "ok";
 
@@ -30,7 +33,7 @@ namespace extension {
 
     bool initialize();
     void finalize();
-    void call(char *output, int outputSize, const char *function);
+    int call(char *output, int outputSize, const char *function, const char **args, int argCount);
     Request popRequest();
 
 } // namespace extension

@@ -23,24 +23,16 @@ namespace extension {
 namespace {
     const std::string EXTENSION_FOLDER_ENV_VAR = "R3_EXTENSION_HOME";
     const std::string EXTENSION_FOLDER = "R3Extension";
-    const std::string CONFIG_FILE = "config-dev.properties";
-    const std::string DEFAULT_REQUEST_PARAM_SEPARATOR = "`";
+    const std::string CONFIG_FILE = "config.properties";
 
     Queue<Request> requests;
     std::thread sqlThread;
-    std::string requestParamSeparator;
     std::string configError = "";
 }
 
-    void respond(char* output, const std::string& type, const std::string& data) {
-        std::string message = fmt::format("[\"{}\",{}]", type, data);
-        message.copy(output, message.length());
-        output[message.length()] = '\0';
-    }
-
-    void split(const std::string &str, const std::string& separator, std::vector<std::string> &elems) {
-        std::regex separatorRegex(separator);
-        elems = { std::sregex_token_iterator(str.begin(), str.end(), separatorRegex, -1), std::sregex_token_iterator() };
+    void respond(char* output, const std::string& data) {
+        data.copy(output, data.length());
+        output[data.length()] = '\0';
     }
 
     std::string getExtensionFolder() {
@@ -89,6 +81,15 @@ namespace {
         }
     }
 
+    void stripDoubleQuotedParams(std::vector<std::string>& params) {
+        for (auto&& param : params) {
+            if (param.length() >= 2 && param.front() == '"' && param.back() == '"') {
+                param.erase(0, 1);
+                param.pop_back();
+            }
+        }
+    }
+
     bool initialize() {
         std::string extensionFolder(getExtensionFolder());
         std::string configFilePath(fmt::format("{}{}{}", extensionFolder, Poco::Path::separator(), CONFIG_FILE));
@@ -104,8 +105,6 @@ namespace {
 
         std::string logLevel = config->getString("r3.log.level", "info");
         log::initialze(extensionFolder, logLevel);
-
-        requestParamSeparator = config->getString("r3.sqf.separator", DEFAULT_REQUEST_PARAM_SEPARATOR);
 
         std::string host = getStringProperty(config, "r3.db.host");
         uint32_t port = getUIntProperty(config, "r3.db.port");
@@ -128,41 +127,38 @@ namespace {
         log::logger->info("Stopped r3_extension version '{}'.", R3_EXTENSION_VERSION);
     }
 
-    void call(char* output, int outputSize, const char* function) {
+    int call(char *output, int outputSize, const char *function, const char **args, int argCount) {
         if (!configError.empty()) {
-            respond(output, RESPONSE_TYPE_ERROR, fmt::format("\"{}\"", configError));
-            return;
+            respond(output, fmt::format("\"{}\"", configError));
+            return RESPONSE_RETURN_CODE_ERROR;
         }
         Request request{ "" };
-        split(std::string(function), requestParamSeparator, request.params);
-        if (!request.params.empty()) {
-            request.command = request.params[0];
-        }
+        request.command = std::string(function);
+        request.params.insert(request.params.end(), args, args + argCount);
+        stripDoubleQuotedParams(request.params);
+        log::logger->trace("Command '{}', params size '{}'.", request.command, request.params.size());
+
         if (request.command == "version") {
-            respond(output, RESPONSE_TYPE_OK, fmt::format("\"{}\"", R3_EXTENSION_VERSION));
-            return;
-        }
-        else if (request.command == "separator") {
-            respond(output, RESPONSE_TYPE_OK, fmt::format("\"{}\"", requestParamSeparator));
-            return;
+            respond(output, fmt::format("\"{}\"", R3_EXTENSION_VERSION));
+            return RESPONSE_RETURN_CODE_OK;
         }
         else if (request.command == "connect") {
             if (sql::isConnected()) {
-                respond(output, RESPONSE_TYPE_OK, "true");
-                return;
+                respond(output, "true");
+                return RESPONSE_RETURN_CODE_OK;
             }
             std::string message = sql::connect();
             if (message.empty()) {
                 sqlThread = std::thread(sql::run);
-                respond(output, RESPONSE_TYPE_OK, "true");
-                return;
+                respond(output, "true");
+                return RESPONSE_RETURN_CODE_OK;
             }
-            respond(output, RESPONSE_TYPE_ERROR, message);
-            return;
+            respond(output, message);
+            return RESPONSE_RETURN_CODE_ERROR;
         }
         else if (!sql::isConnected()) {
-            respond(output, RESPONSE_TYPE_ERROR, "\"Not connected to the database!\"");
-            return;
+            respond(output, "\"Not connected to the database!\"");
+            return RESPONSE_RETURN_CODE_ERROR;
         }
         else if (request.command == "replay") {
             Response response;
@@ -170,8 +166,8 @@ namespace {
                 std::lock_guard<std::mutex> lock(sql::getSessionMutex());
                 response = sql::processRequest(request);
             }
-            respond(output, RESPONSE_TYPE_OK, response.data);
-            return;
+            respond(output, response.data);
+            return RESPONSE_RETURN_CODE_OK;
         }
         else if (
             request.command == "infantry" || 
@@ -186,10 +182,11 @@ namespace {
             request.command == "events_missile") {
 
             requests.push(request);
-            respond(output, RESPONSE_TYPE_OK, EMPTY_SQF_DATA);
-            return;
+            respond(output, EMPTY_SQF_DATA);
+            return RESPONSE_RETURN_CODE_OK;
         }
-        respond(output, RESPONSE_TYPE_ERROR, "\"Unkown command\"");
+        respond(output, "\"Unkown command\"");
+        return RESPONSE_RETURN_CODE_ERROR;
     }
 
     Request popRequest() {
