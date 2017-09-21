@@ -121,7 +121,7 @@ namespace r3 {
             log::logger->trace("Request command '{}' params size '{}'!", request.command, request.params.size());
 
             try {
-                if (request.command == "replay" && realParamsSize == 7) {
+                if (request.command == "create_mission" && realParamsSize == 7) {
 
                     std::string missionName = request.params[1];
                     std::string missionDisplayName = request.params[2];
@@ -153,12 +153,12 @@ namespace r3 {
 
                     response.data = std::to_string(replayId);
                 }
-                else if (request.command == "update_replay" && realParamsSize == 2) {
+                else if (request.command == "update_mission" && realParamsSize == 2) {
 
                     uint32_t replayId = parseUnsigned(request.params[1]);
                     double missionTime = parseFloat(request.params[2]);
 
-                    log::logger->debug("Inserting into 'update_replay' values last_mission_time '{}', id '{}'.", missionTime, replayId);
+                    log::logger->debug("Updating 'missions' values last_mission_time '{}', id '{}'.", missionTime, replayId);
 
                     *session << "UPDATE missions SET last_event_time = UTC_TIMESTAMP(), last_mission_time = ? WHERE id = ? LIMIT 1",
                         Poco::Data::Keywords::use(missionTime),

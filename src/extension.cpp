@@ -160,7 +160,7 @@ namespace {
             respond(output, "\"Not connected to the database!\"");
             return RESPONSE_RETURN_CODE_ERROR;
         }
-        else if (request.command == "replay") {
+        else if (request.command == "create_mission") {
             Response response;
             {
                 std::lock_guard<std::mutex> lock(sql::getSessionMutex());
@@ -178,7 +178,7 @@ namespace {
             request.command == "events_get_in_out" || 
             request.command == "events_projectile" || 
             request.command == "events_downed" || 
-            request.command == "update_replay" || 
+            request.command == "update_mission" || 
             request.command == "events_missile") {
 
             requests.push(request);
