@@ -116,20 +116,20 @@ namespace r3 {
         Response processRequest(const Request& request) {
 
             Response response{ RESPONSE_TYPE_OK, EMPTY_SQF_DATA };
-            auto realParamsSize = request.params.size() - 1;
+            auto realParamsSize = request.params.size();
 
             log::logger->trace("Request command '{}' params size '{}'!", request.command, request.params.size());
 
             try {
                 if (request.command == "create_mission" && realParamsSize == 7) {
 
-                    std::string missionName = request.params[1];
-                    std::string missionDisplayName = request.params[2];
-                    std::string map = request.params[3];
-                    std::string author = request.params[4];
-                    double dayTime = getNumericValue(request.params, 5);
-                    std::string addonVersion = request.params[6];
-                    std::string fileName = request.params[7];
+                    std::string missionName = request.params[0];
+                    std::string missionDisplayName = request.params[1];
+                    std::string map = request.params[2];
+                    std::string author = request.params[3];
+                    double dayTime = getNumericValue(request.params, 4);
+                    std::string addonVersion = request.params[5];
+                    std::string fileName = request.params[6];
 
                     log::logger->debug("Inserting into 'missions' values missionName '{}', terrain '{}', dayTime '{}', author '{}', addonVersion '{}'.", missionName, map, dayTime, author, addonVersion);
 
@@ -155,8 +155,8 @@ namespace r3 {
                 }
                 else if (request.command == "update_mission" && realParamsSize == 2) {
 
-                    uint32_t replayId = parseUnsigned(request.params[1]);
-                    double missionTime = parseFloat(request.params[2]);
+                    uint32_t replayId = parseUnsigned(request.params[0]);
+                    double missionTime = parseFloat(request.params[1]);
 
                     log::logger->debug("Updating 'missions' values last_mission_time '{}', id '{}'.", missionTime, replayId);
 
@@ -201,14 +201,14 @@ namespace r3 {
                 }
                 else if (request.command == "infantry_positions" && realParamsSize == 8) {
 
-                    uint32_t replayId = parseUnsigned(request.params[1]);
-                    uint32_t entityId = parseUnsigned(request.params[2]);
-                    double posX = parseFloat(request.params[3]);
-                    double posY = parseFloat(request.params[4]);
-                    uint32_t direction = parseUnsigned(request.params[5]);
-                    uint32_t keyFrame = parseUnsigned(request.params[6]);
-                    uint32_t isDead = parseUnsigned(request.params[7]);
-                    double missionTime = parseFloat(request.params[8]);
+                    uint32_t replayId = parseUnsigned(request.params[0]);
+                    uint32_t entityId = parseUnsigned(request.params[1]);
+                    double posX = parseFloat(request.params[2]);
+                    double posY = parseFloat(request.params[3]);
+                    uint32_t direction = parseUnsigned(request.params[4]);
+                    uint32_t keyFrame = parseUnsigned(request.params[5]);
+                    uint32_t isDead = parseUnsigned(request.params[6]);
+                    double missionTime = parseFloat(request.params[7]);
 
                     //log::logger->debug("Inserting into 'infantry_positions' values mission '{}', time '{}', frame '{}'.", replayId, missionTime, keyFrame);
                     *session << "INSERT INTO infantry_positions(mission, entity_id, x, y, direction, key_frame, is_dead, mission_time) VALUES (?,?,?,?,?,?,?,?)",
@@ -224,12 +224,12 @@ namespace r3 {
                 }
                 else if (request.command == "vehicles" && realParamsSize == 6) {
 
-                    uint32_t replayId = parseUnsigned(request.params[1]);
-                    uint32_t entityId = parseUnsigned(request.params[2]);
-                    std::string vehicleClass = request.params[3];
-                    std::string vehicleIcon = request.params[4];
-                    std::string vehicleIconPath = request.params[5];
-                    double missionTime = parseFloat(request.params[6]);
+                    uint32_t replayId = parseUnsigned(request.params[0]);
+                    uint32_t entityId = parseUnsigned(request.params[1]);
+                    std::string vehicleClass = request.params[2];
+                    std::string vehicleIcon = request.params[3];
+                    std::string vehicleIconPath = request.params[4];
+                    double missionTime = parseFloat(request.params[5]);
 
                     //log::logger->debug("Inserting into 'infantry' values id '{}', name '{}'.", id, name);
                     *session << "INSERT INTO vehicles(mission, entity_id, class, icon, icon_path, mission_time) VALUES (?,?,?,?,?,?)",
@@ -243,18 +243,18 @@ namespace r3 {
                 }
                 else if (request.command == "vehicle_positions" && realParamsSize == 12) {
 
-                    uint32_t replayId = parseUnsigned(request.params[1]);
-                    uint32_t entityId = parseUnsigned(request.params[2]);
-                    double posX = parseFloat(request.params[3]);
-                    double posY = parseFloat(request.params[4]);
-                    double posZ = parseFloat(request.params[5]);
-                    uint32_t direction = parseUnsigned(request.params[6]);
-                    uint32_t keyFrame = parseUnsigned(request.params[7]);
-                    std::string driver = request.params[8];
-                    std::string crew = request.params[9];
-                    std::string cargo = request.params[10];
-                    uint32_t isDead = parseUnsigned(request.params[11]);
-                    double missionTime = parseFloat(request.params[12]);
+                    uint32_t replayId = parseUnsigned(request.params[0]);
+                    uint32_t entityId = parseUnsigned(request.params[1]);
+                    double posX = parseFloat(request.params[2]);
+                    double posY = parseFloat(request.params[3]);
+                    double posZ = parseFloat(request.params[4]);
+                    uint32_t direction = parseUnsigned(request.params[5]);
+                    uint32_t keyFrame = parseUnsigned(request.params[6]);
+                    std::string driver = request.params[7];
+                    std::string crew = request.params[8];
+                    std::string cargo = request.params[9];
+                    uint32_t isDead = parseUnsigned(request.params[10]);
+                    double missionTime = parseFloat(request.params[11]);
 
                     //log::logger->debug("Inserting into 'vehicle_positions' values mission '{}', time '{}'.", replayId, missionTime);
                     *session << "INSERT INTO vehicle_positions(mission, entity_id, x, y, z, direction, key_frame, driver, crew, cargo, is_dead, mission_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
@@ -274,11 +274,11 @@ namespace r3 {
                 }
                 else if (request.command == "events_connections" && realParamsSize == 5) {
 
-                    uint32_t replayId = parseUnsigned(request.params[1]);
-                    double missionTime = parseFloat(request.params[2]);
-                    std::string type = request.params[3];
-                    std::string playerId = request.params[4];
-                    std::string name = request.params[5];
+                    uint32_t replayId = parseUnsigned(request.params[0]);
+                    double missionTime = parseFloat(request.params[1]);
+                    std::string type = request.params[2];
+                    std::string playerId = request.params[3];
+                    std::string name = request.params[4];
 
                     //log::logger->debug("Inserting into 'events' values replayId '{}', playerId '{}', type '{}', value '{}', missionTime '{}'.", replayId, playerId, type, value, missionTime);
 
@@ -292,11 +292,11 @@ namespace r3 {
                 }
                 else if (request.command == "events_get_in_out" && realParamsSize == 5) {
 
-                    uint32_t replayId = parseUnsigned(request.params[1]);
-                    double missionTime = parseFloat(request.params[2]);
-                    std::string type = request.params[3];
-                    uint32_t entityUnit = parseUnsigned(request.params[4]);
-                    uint32_t entityVehicle = parseUnsigned(request.params[5]);
+                    uint32_t replayId = parseUnsigned(request.params[0]);
+                    double missionTime = parseFloat(request.params[1]);
+                    std::string type = request.params[2];
+                    uint32_t entityUnit = parseUnsigned(request.params[3]);
+                    uint32_t entityVehicle = parseUnsigned(request.params[4]);
 
                     log::logger->debug("Inserting into 'events_get_in_out' values mission '{}', mission_time '{}', type '{}'.", replayId, missionTime, type);
 
@@ -310,13 +310,13 @@ namespace r3 {
                 }
                 else if (request.command == "events_projectile" && realParamsSize == 7) {
 
-                    uint32_t replayId = parseUnsigned(request.params[1]);
-                    double missionTime = parseFloat(request.params[2]);
-                    std::string grenadeType = request.params[3];
-                    uint32_t entitAttacker = parseUnsigned(request.params[4]);
-                    double posX = parseFloat(request.params[5]);
-                    double posY = parseFloat(request.params[6]);
-                    std::string projectileName = request.params[7];
+                    uint32_t replayId = parseUnsigned(request.params[0]);
+                    double missionTime = parseFloat(request.params[1]);
+                    std::string grenadeType = request.params[2];
+                    uint32_t entitAttacker = parseUnsigned(request.params[3]);
+                    double posX = parseFloat(request.params[4]);
+                    double posY = parseFloat(request.params[5]);
+                    std::string projectileName = request.params[6];
 
                     log::logger->debug("Inserting into 'events_projectile' values replayId '{}', entity_attacker '{}', type '{}', projectile_name '{}'.", replayId, entitAttacker, grenadeType, projectileName);
 
@@ -332,15 +332,15 @@ namespace r3 {
                 }
                 else if (request.command == "events_downed" && realParamsSize == 9) {
 
-                    uint32_t replayId = parseUnsigned(request.params[1]);
-                    double missionTime = parseFloat(request.params[2]);
-                    std::string type = request.params[3];
-                    uint32_t entitAttacker = parseUnsigned(request.params[4]);
-                    uint32_t entityVictim = parseUnsigned(request.params[5]);
-                    uint32_t attackerVehicle = parseUnsigned(request.params[6]);
-                    uint32_t sameFaction = parseUnsigned(request.params[7]);
-                    uint32_t attackerDistance = parseUnsigned(request.params[8]);
-                    std::string weapon = request.params[9];
+                    uint32_t replayId = parseUnsigned(request.params[0]);
+                    double missionTime = parseFloat(request.params[1]);
+                    std::string type = request.params[2];
+                    uint32_t entitAttacker = parseUnsigned(request.params[3]);
+                    uint32_t entityVictim = parseUnsigned(request.params[4]);
+                    uint32_t attackerVehicle = parseUnsigned(request.params[5]);
+                    uint32_t sameFaction = parseUnsigned(request.params[6]);
+                    uint32_t attackerDistance = parseUnsigned(request.params[7]);
+                    std::string weapon = request.params[8];
 
                     log::logger->debug("Inserting into 'events_downed' values mission '{}', entity_attacker '{}', type '{}', same_faction '{}', weapon '{}'.", replayId, entitAttacker, type, sameFaction, weapon);
 
@@ -358,12 +358,12 @@ namespace r3 {
                 }
                 else if (request.command == "events_missile" && realParamsSize == 6) {
 
-                    uint32_t replayId = parseUnsigned(request.params[1]);
-                    double missionTime = parseFloat(request.params[2]);
-                    std::string type = request.params[3];
-                    uint32_t entitAttacker = parseUnsigned(request.params[4]);
-                    uint32_t entityVictim = parseUnsigned(request.params[5]);
-                    std::string weapon = request.params[6];
+                    uint32_t replayId = parseUnsigned(request.params[0]);
+                    double missionTime = parseFloat(request.params[1]);
+                    std::string type = request.params[2];
+                    uint32_t entitAttacker = parseUnsigned(request.params[3]);
+                    uint32_t entityVictim = parseUnsigned(request.params[4]);
+                    std::string weapon = request.params[5];
 
                     log::logger->debug("Inserting into 'events_missile' values replayId '{}', type '{}', weapon '{}'.", replayId, type, weapon);
 
