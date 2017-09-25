@@ -83,8 +83,8 @@ int main(int argc, char* argv[]) {
     std::string line = "";
     const int outputSize = 10000;
     char *output = new char[outputSize];
-    std::regex commandSeparatorRegex(":");
-    std::regex paramSeparatorRegex(",");
+    std::regex commandSeparatorRegex("~");
+    std::regex paramSeparatorRegex("`");
 
     r3::extension::initialize();
     std::cout
