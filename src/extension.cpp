@@ -137,7 +137,6 @@ namespace {
         request.params.insert(request.params.end(), args, args + argCount);
         stripDoubleQuotedParams(request.params);
         log::logger->trace("Command '{}', params size '{}'.", request.command, request.params.size());
-
         if (request.command == "version") {
             respond(output, fmt::format("\"{}\"", R3_EXTENSION_VERSION));
             return RESPONSE_RETURN_CODE_OK;
@@ -185,7 +184,7 @@ namespace {
             respond(output, EMPTY_SQF_DATA);
             return RESPONSE_RETURN_CODE_OK;
         }
-        respond(output, "\"Unkown command\"");
+        respond(output, fmt::format("\"Unkown command '{}'\"", request.command));
         return RESPONSE_RETURN_CODE_ERROR;
     }
 
