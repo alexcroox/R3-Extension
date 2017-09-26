@@ -154,19 +154,19 @@ namespace r3 {
                         Poco::Data::Keywords::now;
                 }
                 else if (request.command == "infantry" && paramsSize == 13) {
-                    uint32_t replayId = parseUnsigned(request.params[1]);
-                    std::string playerId = request.params[2];
-                    uint32_t entityId = parseUnsigned(request.params[3]);
-                    std::string unitName = request.params[4];
-                    uint32_t unitFaction = parseUnsigned(request.params[5]);
-                    std::string unitClass = request.params[6];
-                    std::string unitGroupId = request.params[7];
-                    uint32_t unitIsLeader = parseUnsigned(request.params[8]);
-                    std::string unitIcon = request.params[9];
-                    std::string unitWeapon = request.params[10];
-                    std::string unitLauncher = request.params[11];
-                    std::string unitData = request.params[12];
-                    double missionTime = parseFloat(request.params[13]);
+                    uint32_t replayId = parseUnsigned(request.params[0]);
+                    std::string playerId = request.params[1];
+                    uint32_t entityId = parseUnsigned(request.params[2]);
+                    std::string unitName = request.params[3];
+                    uint32_t unitFaction = parseUnsigned(request.params[4]);
+                    std::string unitClass = request.params[5];
+                    std::string unitGroupId = request.params[6];
+                    uint32_t unitIsLeader = parseUnsigned(request.params[7]);
+                    std::string unitIcon = request.params[8];
+                    std::string unitWeapon = request.params[9];
+                    std::string unitLauncher = request.params[10];
+                    std::string unitData = request.params[11];
+                    double missionTime = parseFloat(request.params[12]);
                     log::logger->debug("Inserting into 'infantry' values mission '{}', playerId '{}', entityId '{}', name '{}', faction '{}', class '{}', group '{}', leader '{}', icon '{}', weapon '{}', launcher '{}', data '{}', mission_time '{}'.",
                         replayId, playerId, entityId, unitName, unitFaction, unitClass, unitGroupId, unitIsLeader, unitIcon, unitWeapon, unitLauncher, unitData, missionTime);
                     *session << "INSERT INTO infantry(mission, player_id, entity_id, name, faction, class, `group`, leader, icon, weapon, launcher, data, mission_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
