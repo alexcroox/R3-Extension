@@ -35,6 +35,7 @@ namespace extension {
     void finalize();
     int call(char *output, int outputSize, const char *function, const char **args, int argCount);
     Request popRequest();
+    void popAndFill(std::vector<Request>& target, size_t amount);
 
 } // namespace extension
 } // namespace r3

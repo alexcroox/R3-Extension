@@ -159,11 +159,11 @@ namespace {
             respond(output, "\"Not connected to the database!\"");
             return RESPONSE_RETURN_CODE_ERROR;
         }
-        else if (request.command == "create_mission") {
+        else if (request.command == "create_mission" && request.params.size() == 7) {
             Response response;
             {
                 std::lock_guard<std::mutex> lock(sql::getSessionMutex());
-                response = sql::processRequest(request);
+                response = sql::processCreateMissionRequest(request);
             }
             respond(output, response.data);
             return RESPONSE_RETURN_CODE_OK;
@@ -180,7 +180,9 @@ namespace {
             request.command == "update_mission" || 
             request.command == "events_missile") {
 
+            log::logger->trace("Pushing request '{}' to queue .", request.command);
             requests.push(request);
+            log::logger->trace("Pushed request '{}' to queue .", request.command);
             respond(output, EMPTY_SQF_DATA);
             return RESPONSE_RETURN_CODE_OK;
         }
@@ -190,6 +192,10 @@ namespace {
 
     Request popRequest() {
         return requests.pop();
+    }
+
+    void popAndFill(std::vector<Request>& target, size_t amount) {
+        requests.popAndFill(target, amount);
     }
 
 } // namespace extension

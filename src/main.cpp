@@ -92,8 +92,9 @@ int main(int argc, char* argv[]) {
         << "Use it as <command>~<param1>`<param2>`<param3>... (No support for escaping '~' and '`')" << std::endl
         << "You first have to connect to the DB with 'connect'" << std::endl
         << std::endl << std::endl;
-    while (line != "exit") {
+    while (true) {
         std::getline(std::cin, line);
+        if (line == "exit") { break; }
         std::vector<std::string> commandAndParams;
         commandAndParams = { std::sregex_token_iterator(line.begin(), line.end(), commandSeparatorRegex, -1), std::sregex_token_iterator() };
         std::string command = commandAndParams[0];

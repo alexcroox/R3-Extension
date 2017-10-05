@@ -3,7 +3,9 @@
 
 #include <string>
 #include <mutex>
+#include <vector>
 
+#define MAX_PROCESS_REQUEST_COUNT 256
 
 namespace r3 {
 
@@ -18,7 +20,8 @@ namespace sql {
     std::mutex& getSessionMutex();
     bool isConnected();
     std::string connect();
-    Response processRequest(const Request& request);
+    Response processCreateMissionRequest(const Request& request);
+    bool processRequests(const std::vector<Request>& requests);
 
 } // namespace sql
 } // namespace r3

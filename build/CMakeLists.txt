@@ -8,7 +8,7 @@
 SET(POCO_HOME "c:/dev/c++/poco-poco-1.7.5-release")
 
 # Set this to where the MySQL 32 bit C Connecter was installed 
-SET(MYSQL_HOME "c:/Program Files (x86)/MySQL/MySQL Connector C 6.1")
+SET(MYSQL32_HOME "c:/Program Files (x86)/MySQL/MySQL Connector C 6.1")
 # Set this to where the MySQL 64 bit C Connecter was installed
 SET(MYSQL64_HOME "c:/Program Files/MySQL/MySQL Connector C 6.1")
 
@@ -27,12 +27,12 @@ SET(SOURCES
 
 IF (CMAKE_SIZEOF_VOID_P EQUAL 8)
     SET(POCO_HOME_LIB ${POCO_HOME}/lib64)
-    SET(MYSQL_HOME_LIB ${MYSQL64_HOME}/lib)
+    SET(MYSQL_HOME ${MYSQL64_HOME})
     SET(POCO_LINUX_LIB_ARCH "x86_64")
     SET(R3_LIB_NAME "r3_extension_x64")
 ELSE()
     SET(POCO_HOME_LIB ${POCO_HOME}/lib)
-    SET(MYSQL_HOME_LIB ${MYSQL_HOME}/lib)
+    SET(MYSQL_HOME ${MYSQL32_HOME})
     SET(POCO_LINUX_LIB_ARCH "x86")
     SET(R3_LIB_NAME "r3_extension")
 ENDIF()
@@ -55,8 +55,10 @@ INCLUDE_DIRECTORIES(${POCO_HOME}/Foundation/include)
 INCLUDE_DIRECTORIES(${POCO_HOME}/Data/include)
 INCLUDE_DIRECTORIES(${POCO_HOME}/Data/MySQL/include)
 INCLUDE_DIRECTORIES(${POCO_HOME}/Util/include)
+INCLUDE_DIRECTORIES(${MYSQL_HOME}/include)
 
 LINK_DIRECTORIES(${POCO_HOME_LIB})
+LINK_DIRECTORIES(${MYSQL_HOME}/lib)
 
 # Console
 ADD_EXECUTABLE(r3_extension_console ${SOURCES})
@@ -74,7 +76,7 @@ IF (MSVC)
         ${POCO_HOME_LIB}/PocoXMLmt.lib
         ${POCO_HOME_LIB}/PocoJSONmt.lib
         ${POCO_HOME_LIB}/PocoUtilmt.lib
-        ${MYSQL_HOME_LIB}/vs14/mysqlclient.lib
+        ${MYSQL_HOME}/lib/vs14/mysqlclient.lib
     )
 ELSE()
     SET(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -91,7 +93,7 @@ ELSE()
         ${POCO_HOME_LIB}/libPocoDataMySQL.a
         ${POCO_HOME_LIB}/libPocoData.a
         ${POCO_HOME_LIB}/libPocoFoundation.a
-        ${MYSQL_HOME_LIB}/libmysqlclient.a
+        ${MYSQL_HOME}/lib/libmysqlclient.a
     )
 ENDIF()
 

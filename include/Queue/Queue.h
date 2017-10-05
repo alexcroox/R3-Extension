@@ -7,6 +7,7 @@
 #ifndef CONCURRENT_QUEUE_
 #define CONCURRENT_QUEUE_
 
+#include <vector>
 #include <queue>
 #include <thread>
 #include <mutex>
@@ -27,6 +28,19 @@ class Queue
     auto val = queue_.front();
     queue_.pop();
     return val;
+  }
+
+  void popAndFill(std::vector<T>& target, size_t amount) {
+    std::unique_lock<std::mutex> mlock(mutex_);
+    while (queue_.empty())
+    {
+      cond_.wait(mlock);
+    }
+    for (int i = 0; i < amount; i++) {
+      if (queue_.empty()) { break; }
+      target.push_back(queue_.front());
+      queue_.pop();
+    }
   }
 
   T& front() {
