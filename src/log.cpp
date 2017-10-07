@@ -22,11 +22,16 @@ namespace {
     }
 
     std::string getLogFileName() {
-        auto time = std::time(nullptr);
-        auto localTime = *std::localtime(&time);
+        time_t time = std::time(nullptr);
+        tm timeInfo;
+#ifdef _WIN32
+        localtime_s(&timeInfo, &time);
+#else
+        localtime_r(&time, &timeInfo);
+#endif
         std::ostringstream fileName;
         fileName << LOGGER_NAME;
-        fileName << std::put_time(&localTime, "_%Y-%m-%d_%H-%M-%S");
+        fileName << std::put_time(&timeInfo, "_%Y-%m-%d_%H-%M-%S");
         return fileName.str();
     }
 
