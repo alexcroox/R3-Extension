@@ -16,10 +16,12 @@ cmake_minimum_required (VERSION 3.2)
 PROJECT (r3_extension)
 
 SET(SOURCES
+    ../include/config.h
     ../include/extension.h
     ../include/log.h
     ../include/sql.h
     ../include/os.h
+    ../src/config.cpp
     ../src/extension.cpp
     ../src/log.cpp
     ../src/sql.cpp

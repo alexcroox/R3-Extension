@@ -9,9 +9,7 @@
 
 #include "log.h"
 #include "os.h"
-
-#include "Poco/Util/PropertyFileConfiguration.h"
-
+#include "config.h"
 
 namespace r3 {
 namespace extension {
@@ -48,33 +46,6 @@ namespace {
         return extensionFolder + os::pathSeparator + EXTENSION_FOLDER;
     }
 
-    std::string getStringProperty(Poco::AutoPtr<Poco::Util::PropertyFileConfiguration> config, const std::string& key) {
-        if (!config->has(key)) {
-            std::string message = fmt::format("Config file is missing property '{}'.", key);
-            configError += " " + message;
-            log::logger->error(message);
-            return "";
-        }
-        return config->getString(key);
-    }
-
-    uint32_t getUIntProperty(Poco::AutoPtr<Poco::Util::PropertyFileConfiguration> config, const std::string& key) {
-        if (!config->has(key)) {
-            std::string message = fmt::format("Config file is missing property '{}'!", key);
-            configError += " " + message;
-            log::logger->error(message);
-            return 0;
-        }
-        try {
-            return config->getUInt(key);
-        } catch (Poco::SyntaxException e) {
-            std::string message = fmt::format("Property '{}' value '{}' is not a number!", key, config->getString(key));
-            configError += " " + message;
-            log::logger->error(message);
-            return 0;
-        }
-    }
-
     void stripDoubleQuotedParams(std::vector<std::string>& params) {
         for (auto&& param : params) {
             if (param.length() >= 2 && param.front() == '"' && param.back() == '"') {
@@ -100,16 +71,22 @@ namespace {
             log::logger->error(message);
             return false;
         }
-        Poco::AutoPtr<Poco::Util::PropertyFileConfiguration> config(new Poco::Util::PropertyFileConfiguration(configFile));
 
-        std::string logLevel = config->getString("r3.log.level", "info");
+        std::string errors = config::readConfigFile(configFile);
+        if (!errors.empty()) {
+            configError += errors;
+            log::initialize(extensionFolder, "info");
+            log::logger->error(configError);
+            return false;
+        }
+
+        std::string logLevel = config::getLogLevel();
         log::initialize(extensionFolder, logLevel);
-
-        std::string host = getStringProperty(config, "r3.db.host");
-        uint32_t port = getUIntProperty(config, "r3.db.port");
-        std::string database = getStringProperty(config, "r3.db.database");
-        std::string user = getStringProperty(config, "r3.db.username");
-        std::string password = getStringProperty(config, "r3.db.password");
+        std::string host = config::getDbHost();
+        uint32_t port = config::getDbPort();
+        std::string database = config::getDbDatabase();
+        std::string user = config::getDbUsername();
+        std::string password = config::getDbPassword();
         sql::initialize(host, port, database, user, password);
 
         log::logger->info("Starting r3_extension version '{}'.", R3_EXTENSION_VERSION);
