@@ -4,9 +4,6 @@
 # Linux 32bit: `cmake . -DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32`
 # Linux 64bit: `cmake . -DCMAKE_C_FLAGS=-m64 -DCMAKE_CXX_FLAGS=-m64`
 
-# Set this to where the POCO sources are and built
-SET(POCO_HOME "c:/dev/c++/poco-poco-1.7.5-release")
-
 # Set this to where the MySQL 32 bit C Connecter was installed 
 SET(MYSQL32_HOME "c:/Program Files (x86)/MySQL/MySQL Connector C 6.1")
 # Set this to where the MySQL 64 bit C Connecter was installed
@@ -30,14 +27,10 @@ SET(SOURCES
 )
 
 IF (CMAKE_SIZEOF_VOID_P EQUAL 8)
-    SET(POCO_HOME_LIB ${POCO_HOME}/lib64)
     SET(MYSQL_HOME ${MYSQL64_HOME})
-    SET(POCO_LINUX_LIB_ARCH "x86_64")
     SET(R3_LIB_NAME "r3_extension_x64")
 ELSE()
-    SET(POCO_HOME_LIB ${POCO_HOME}/lib)
     SET(MYSQL_HOME ${MYSQL32_HOME})
-    SET(POCO_LINUX_LIB_ARCH "x86")
     SET(R3_LIB_NAME "r3_extension")
 ENDIF()
 
@@ -50,18 +43,11 @@ IF (MSVC)
           string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
        endif(${flag_var} MATCHES "/MD")
     endforeach(flag_var)
-ELSE()
-    SET(POCO_HOME_LIB ${POCO_HOME}/lib/Linux/${POCO_LINUX_LIB_ARCH})
 ENDIF()
 
 INCLUDE_DIRECTORIES(../include)
-INCLUDE_DIRECTORIES(${POCO_HOME}/Foundation/include)
-INCLUDE_DIRECTORIES(${POCO_HOME}/Data/include)
-INCLUDE_DIRECTORIES(${POCO_HOME}/Data/MySQL/include)
-INCLUDE_DIRECTORIES(${POCO_HOME}/Util/include)
 INCLUDE_DIRECTORIES(${MYSQL_HOME}/include)
 
-LINK_DIRECTORIES(${POCO_HOME_LIB})
 LINK_DIRECTORIES(${MYSQL_HOME}/lib)
 
 # Console
@@ -74,12 +60,6 @@ ADD_LIBRARY(${R3_LIB_NAME} SHARED ${SOURCES})
 IF (MSVC)
     SET(EXTRA_LIBS)
     SET(STATIC_LIBS
-        ${POCO_HOME_LIB}/PocoDatamt.lib
-        ${POCO_HOME_LIB}/PocoDataMySQLmt.lib
-        ${POCO_HOME_LIB}/PocoFoundationmt.lib
-        ${POCO_HOME_LIB}/PocoXMLmt.lib
-        ${POCO_HOME_LIB}/PocoJSONmt.lib
-        ${POCO_HOME_LIB}/PocoUtilmt.lib
         ${MYSQL_HOME}/lib/vs14/mysqlclient.lib
     )
 ELSE()
@@ -91,12 +71,6 @@ ELSE()
 
     SET(EXTRA_LIBS dl Threads::Threads)
     SET(STATIC_LIBS
-        ${POCO_HOME_LIB}/libPocoUtil.a
-        ${POCO_HOME_LIB}/libPocoXML.a
-        ${POCO_HOME_LIB}/libPocoJSON.a
-        ${POCO_HOME_LIB}/libPocoDataMySQL.a
-        ${POCO_HOME_LIB}/libPocoData.a
-        ${POCO_HOME_LIB}/libPocoFoundation.a
         ${MYSQL_HOME}/lib/libmysqlclient.a
     )
 ENDIF()
