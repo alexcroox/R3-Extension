@@ -10,6 +10,8 @@
 #include "Poco/NumberParser.h"
 
 
+#define ESCAPE_BUFFER_MAX_STRING_LENGTH 350
+
 namespace r3 {
     namespace sql {
 
@@ -18,7 +20,7 @@ namespace r3 {
             uint32_t port;
             size_t timeout;
             MYSQL* connection;
-            char escapeBuffer[701]; // vehicle_positions.cargo is the biggest string field with varchar(350). According to the docs of mysql_real_escape_string, we need length * 2 + 1 bytes for the buffer.
+            char escapeBuffer[ESCAPE_BUFFER_MAX_STRING_LENGTH * 2 + 1]; // vehicle_positions.cargo is the biggest string field with varchar(350). According to the docs of mysql_real_escape_string, we need length * 2 + 1 bytes for the buffer.
             std::mutex sessionMutex;
             std::atomic<bool> connected;
         }
@@ -40,6 +42,11 @@ namespace r3 {
         }
 
         void escapeAndAddStringToQuery(const std::string& value, std::stringstream& query) {
+            if (value.length() > ESCAPE_BUFFER_MAX_STRING_LENGTH) {
+                log::logger->warn("String '{}' is too long to escape! Extension only supports strings for up to '{}' characters!", value, ESCAPE_BUFFER_MAX_STRING_LENGTH);
+                query << "''";
+                return;
+            }
             mysql_real_escape_string(connection, escapeBuffer, value.c_str(), value.length());
             query << "'" << escapeBuffer << "'";
         }
