@@ -1,8 +1,10 @@
 #include "log.h"
 
+#include <iomanip>
+#include <ctime>
+#include <sstream>
+
 #include "Poco/Path.h"
-#include "Poco/DateTimeFormatter.h"
-#include "Poco/LocalDateTime.h"
 
 namespace r3 {
 namespace log {
@@ -20,9 +22,12 @@ namespace {
     }
 
     std::string getLogFileName() {
-        std::string fileName = LOGGER_NAME;
-        Poco::DateTimeFormatter::append(fileName, Poco::LocalDateTime(), "_%Y-%m-%d_%H-%M-%S");
-        return fileName;
+        auto time = std::time(nullptr);
+        auto localTime = *std::localtime(&time);
+        std::ostringstream fileName;
+        fileName << LOGGER_NAME;
+        fileName << std::put_time(&localTime, "_%Y-%m-%d_%H-%M-%S");
+        return fileName.str();
     }
 
     bool initialze(const std::string& extensionFolder, const std::string& logLevel) {
