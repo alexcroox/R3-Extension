@@ -7,7 +7,6 @@
 
 #include "my_global.h"
 #include "mysql.h"
-#include "Poco/NumberParser.h"
 
 
 #define ESCAPE_BUFFER_MAX_STRING_LENGTH 350
@@ -25,20 +24,14 @@ namespace r3 {
             std::atomic<bool> connected;
         }
 
+        // This will overflow without any errors when the parsed string is bigger than uint32_t. Returns 0 on parse error.
         uint32_t parseUnsigned(const std::string& str) {
-            uint32_t number = 0;
-            if (!Poco::NumberParser::tryParseUnsigned(str, number)) {
-                return 0;
-            }
-            return number;
+            return std::strtoul(str.c_str(), nullptr, 10);
         }
 
+        // Returns 0 on parse error. Also can cause problems if the current C locale doesn't use dot as the decimal point.
         double parseFloat(const std::string& str) {
-            double number = 0;
-            if (!Poco::NumberParser::tryParseFloat(str, number)) {
-                return 0;
-            }
-            return number;
+            return std::strtod(str.c_str(), nullptr);
         }
 
         void escapeAndAddStringToQuery(const std::string& value, std::stringstream& query) {
