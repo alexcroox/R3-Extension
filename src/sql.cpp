@@ -34,7 +34,7 @@ namespace r3 {
             return std::strtod(str.c_str(), nullptr);
         }
 
-        void escapeAndAddStringToQuery(const std::string& value, std::stringstream& query) {
+        void escapeAndAddStringToQuery(const std::string& value, std::ostringstream& query) {
             if (value.length() > ESCAPE_BUFFER_MAX_STRING_LENGTH) {
                 log::logger->warn("String '{}' is too long to escape! Extension only supports strings for up to '{}' characters!", value, ESCAPE_BUFFER_MAX_STRING_LENGTH);
                 query << "''";
@@ -44,12 +44,12 @@ namespace r3 {
             query << "'" << escapeBuffer << "'";
         }
 
-        void escapeAndAddStringToQueryWithComa(const std::string& value, std::stringstream& query) {
+        void escapeAndAddStringToQueryWithComa(const std::string& value, std::ostringstream& query) {
             escapeAndAddStringToQuery(value, query);
             query << ",";
         }
 
-        bool executeMultiStatementQuery(const std::stringstream& query) {
+        bool executeMultiStatementQuery(const std::ostringstream& query) {
             bool successfull = true;
             if (mysql_query(connection, query.str().c_str())) {
                 successfull = false;
@@ -139,7 +139,7 @@ namespace r3 {
 
         Response processCreateMissionRequest(const Request& request) {
             Response response{ RESPONSE_TYPE_OK, EMPTY_SQF_DATA };
-            std::stringstream query;
+            std::ostringstream query;
             std::string missionName = request.params[0];
             std::string missionDisplayName = request.params[1];
             std::string terrain = request.params[2];
@@ -176,7 +176,7 @@ namespace r3 {
         bool processRequests(const std::vector<Request>& requests) {
             if (requests.empty()) { return false; }
             bool hasPoison = false;
-            std::stringstream query;
+            std::ostringstream query;
             for (const auto& request : requests) {
                 hasPoison = hasPoison || request.command == REQUEST_COMMAND_POISON;
                 auto paramsSize = request.params.size();
