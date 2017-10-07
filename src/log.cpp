@@ -35,7 +35,7 @@ namespace {
         return fileName.str();
     }
 
-    bool initialze(const std::string& extensionFolder, const std::string& logLevel) {
+    bool initialize(const std::string& extensionFolder, const std::string& logLevel) {
         logger = spdlog::rotating_logger_mt(LOGGER_NAME, fmt::format("{}{}{}", extensionFolder, os::pathSeparator, getLogFileName()), 1024 * 1024 * 20, 1);
         logger->flush_on(spdlog::level::trace);
         logger->set_level(getLogLevel(logLevel));

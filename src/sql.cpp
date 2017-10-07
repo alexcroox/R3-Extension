@@ -17,7 +17,6 @@ namespace sql {
 namespace {
     std::string host, database, user, password;
     uint32_t port;
-    size_t timeout;
     MYSQL* connection;
     char escapeBuffer[ESCAPE_BUFFER_MAX_STRING_LENGTH * 2 + 1]; // vehicle_positions.cargo is the biggest string field with varchar(350). According to the docs of mysql_real_escape_string, we need length * 2 + 1 bytes for the buffer.
     std::mutex sessionMutex;
@@ -67,13 +66,12 @@ namespace {
         return successfull;
     }
 
-    bool initialize(const std::string& host_, uint32_t port_, const std::string& database_, const std::string& user_, const std::string& password_, size_t timeout_) {
+    bool initialize(const std::string& host_, uint32_t port_, const std::string& database_, const std::string& user_, const std::string& password_) {
         host = host_;
         port = port_;
         database = database_;
         user = user_;
         password = password_;
-        timeout = timeout_;
         return true;
     }
 

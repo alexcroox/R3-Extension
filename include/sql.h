@@ -14,7 +14,7 @@ namespace r3 {
 
 namespace sql {
 
-    bool initialize(const std::string& host_, uint32_t port_, const std::string& database_, const std::string& user_, const std::string& password_, size_t timeout_);
+    bool initialize(const std::string& host_, uint32_t port_, const std::string& database_, const std::string& user_, const std::string& password_);
     void finalize();
     void run();
     std::mutex& getSessionMutex();

@@ -96,22 +96,21 @@ namespace {
         if (!os::fileExists(configFile)) {
             std::string message = fmt::format("Config file is missing from '{}'!", configFile);
             configError += message;
-            log::initialze(extensionFolder, "info");
+            log::initialize(extensionFolder, "info");
             log::logger->error(message);
             return false;
         }
         Poco::AutoPtr<Poco::Util::PropertyFileConfiguration> config(new Poco::Util::PropertyFileConfiguration(configFile));
 
         std::string logLevel = config->getString("r3.log.level", "info");
-        log::initialze(extensionFolder, logLevel);
+        log::initialize(extensionFolder, logLevel);
 
         std::string host = getStringProperty(config, "r3.db.host");
         uint32_t port = getUIntProperty(config, "r3.db.port");
         std::string database = getStringProperty(config, "r3.db.database");
         std::string user = getStringProperty(config, "r3.db.username");
         std::string password = getStringProperty(config, "r3.db.password");
-        size_t timeout = getUIntProperty(config, "r3.db.timeout");
-        sql::initialize(host, port, database, user, password, timeout);
+        sql::initialize(host, port, database, user, password);
 
         log::logger->info("Starting r3_extension version '{}'.", R3_EXTENSION_VERSION);
         return true;
