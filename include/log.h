@@ -8,6 +8,7 @@ namespace log {
     extern std::shared_ptr<spdlog::logger> logger;
 
     bool initialze(const std::string& extensionFolder, const std::string& logLevel);
+    bool isInitialized();
     void finalize();
 
 } // namespace log

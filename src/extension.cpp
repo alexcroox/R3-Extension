@@ -8,12 +8,8 @@
 #endif
 
 #include "log.h"
+#include "os.h"
 
-#include "Poco/Environment.h"
-#include "Poco/Path.h"
-#include "Poco/File.h"
-#include "Poco/StringTokenizer.h"
-#include "Poco/UnicodeConverter.h"
 #include "Poco/Util/PropertyFileConfiguration.h"
 
 
@@ -36,22 +32,20 @@ namespace {
     }
 
     std::string getExtensionFolder() {
-        if (Poco::Environment::has(EXTENSION_FOLDER_ENV_VAR)) {
-            return Poco::Environment::get(EXTENSION_FOLDER_ENV_VAR);
-        }
+        std::string extensionFolder = os::getEnvironmentVariableValue(EXTENSION_FOLDER_ENV_VAR, ".");
+        if (extensionFolder == ".") {
 #ifdef _WIN32
-        std::string extensionFolder = fmt::format(".{}", Poco::Path::separator());
-        wchar_t wpath[MAX_PATH];
-        if (!SUCCEEDED(SHGetFolderPathW(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, wpath))) {
-            return extensionFolder;
-        }
-        Poco::UnicodeConverter::toUTF8(wpath, extensionFolder);
+            PWSTR wpath = nullptr;
+            if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &wpath))) {
+                std::wstring wstringPath(wpath);
+                extensionFolder = std::string(wstringPath.begin(), wstringPath.end());
+            }
+            CoTaskMemFree(wpath);
 #else
-        std::string extensionFolder = Poco::Environment::get("HOME", ".");
+            extensionFolder = os::getEnvironmentVariableValue("HOME", ".");
 #endif
-        Poco::File file(fmt::format("{}{}{}", extensionFolder, Poco::Path::separator(), EXTENSION_FOLDER));
-        file.createDirectories();
-        return file.path();
+        }
+        return extensionFolder + os::pathSeparator + EXTENSION_FOLDER;
     }
 
     std::string getStringProperty(Poco::AutoPtr<Poco::Util::PropertyFileConfiguration> config, const std::string& key) {
@@ -92,16 +86,21 @@ namespace {
 
     bool initialize() {
         std::string extensionFolder(getExtensionFolder());
-        std::string configFilePath(fmt::format("{}{}{}", extensionFolder, Poco::Path::separator(), CONFIG_FILE));
-        Poco::File file(configFilePath);
-        if (!file.exists()) {
-            std::string message = fmt::format("Config file is missing from '{}'!", configFilePath);
+        if (!os::directoryExists(extensionFolder)) {
+            std::string message = fmt::format("Extension folder doesn't exist at '{}'!", extensionFolder);
+            configError += message;
+            return false;
+        }
+
+        std::string configFile(fmt::format("{}{}{}", extensionFolder, os::pathSeparator, CONFIG_FILE));
+        if (!os::fileExists(configFile)) {
+            std::string message = fmt::format("Config file is missing from '{}'!", configFile);
             configError += message;
             log::initialze(extensionFolder, "info");
             log::logger->error(message);
             return false;
         }
-        Poco::AutoPtr<Poco::Util::PropertyFileConfiguration> config(new Poco::Util::PropertyFileConfiguration(configFilePath));
+        Poco::AutoPtr<Poco::Util::PropertyFileConfiguration> config(new Poco::Util::PropertyFileConfiguration(configFile));
 
         std::string logLevel = config->getString("r3.log.level", "info");
         log::initialze(extensionFolder, logLevel);
@@ -124,7 +123,9 @@ namespace {
             sqlThread.join();
             sql::finalize();
         }
-        log::logger->info("Stopped r3_extension version '{}'.", R3_EXTENSION_VERSION);
+        if (log::isInitialized()) {
+            log::logger->info("Stopped r3_extension version '{}'.", R3_EXTENSION_VERSION);
+        }
     }
 
     int call(char *output, int outputSize, const char *function, const char **args, int argCount) {

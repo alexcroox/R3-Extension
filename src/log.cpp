@@ -1,16 +1,16 @@
 #include "log.h"
+#include "os.h"
 
 #include <iomanip>
 #include <ctime>
 #include <sstream>
-
-#include "Poco/Path.h"
 
 namespace r3 {
 namespace log {
 
 namespace {
     const std::string LOGGER_NAME = "r3_extension_log";
+    bool initialized = false;
 }
 
     std::shared_ptr<spdlog::logger> logger;
@@ -36,10 +36,15 @@ namespace {
     }
 
     bool initialze(const std::string& extensionFolder, const std::string& logLevel) {
-        logger = spdlog::rotating_logger_mt(LOGGER_NAME, fmt::format("{}{}{}", extensionFolder, Poco::Path::separator(), getLogFileName()), 1024 * 1024 * 20, 1);
+        logger = spdlog::rotating_logger_mt(LOGGER_NAME, fmt::format("{}{}{}", extensionFolder, os::pathSeparator, getLogFileName()), 1024 * 1024 * 20, 1);
         logger->flush_on(spdlog::level::trace);
         logger->set_level(getLogLevel(logLevel));
+        initialized = true;
         return true;
+    }
+
+    bool isInitialized() {
+        return initialized;
     }
 
     void finalize() {

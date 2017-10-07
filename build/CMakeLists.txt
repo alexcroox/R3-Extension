@@ -19,10 +19,12 @@ SET(SOURCES
     ../include/extension.h
     ../include/log.h
     ../include/sql.h
+    ../include/os.h
     ../src/extension.cpp
     ../src/log.cpp
     ../src/sql.cpp
     ../src/main.cpp
+    ../src/os.cpp
 )
 
 IF (CMAKE_SIZEOF_VOID_P EQUAL 8)
