@@ -382,6 +382,7 @@ namespace r3 {
                     log::logger->debug("Invlaid command type '{}'!", request.command);
                 }
             }
+            log::logger->trace("Multi statement query: {}", query.str()),
             executeMultiStatementQuery(query);
             return hasPoison;
         }
