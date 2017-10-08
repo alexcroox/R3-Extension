@@ -1,0 +1,29 @@
+language: cpp
+compiler:
+  - gcc
+os:
+  - linux
+matrix:
+  include:
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - cmake
+            - unzip
+            - libmysqlcppconn-dev:x86_64
+            - libmysqlclient-dev:x86_64
+            - gcc-5-multilib
+            - g++-5-multilib
+      env:
+         - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+
+before_install:
+  - eval "${MATRIX_EVAL}"
+install:
+  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 90
+script:
+  - make
