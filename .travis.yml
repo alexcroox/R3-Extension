@@ -29,6 +29,7 @@ install:
   - mkdir mysql
   - tar -zxf mysql-connector-c-6.1.11-linux-glibc2.12-i686.tar.gz -C mysql
 script:
-  - sed -i "s|^SET(MYSQL64_HOME.*|SET(MYSQL64_HOME \"$PWD\/mysql\/\")|" extension/build/CMakeLists.txt
+  - sed -i "s|^SET(MYSQL64_HOME.*|SET(MYSQL64_HOME \"$PWD\/mysql\/\")|" build/CMakeLists.txt
+  - cd build
   - cmake . -DCMAKE_C_FLAGS=-m64 -DCMAKE_CXX_FLAGS=-m64
   - make
