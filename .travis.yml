@@ -14,8 +14,6 @@ matrix:
             - g++-5
             - cmake
             - unzip
-            - libmysqlcppconn-dev:x86_64
-            - libmysqlclient-dev:x86_64
             - gcc-5-multilib
             - g++-5-multilib
       env:
@@ -24,6 +22,13 @@ matrix:
 before_install:
   - eval "${MATRIX_EVAL}"
 install:
-  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 90
+  - wget https://github.com/gabime/spdlog/archive/v0.10.0.zip
+  - wget https://dev.mysql.com/get/Downloads/Connector-C/mysql-connector-c-6.1.11-linux-glibc2.12-i686.tar.gz
+  - unzip -qq v0.10.0.zip
+  - mv spdlog-0.10.0/include/spdlog ../include
+  - mkdir mysql
+  - tar -zxf mysql-connector-c-6.1.11-linux-glibc2.12-i686.tar.gz -C mysql
 script:
+  - sed -i "s|^SET(MYSQL64_HOME.*|SET(MYSQL64_HOME \"$PWD\/mysql\/\")|" extension/build/CMakeLists.txt
+  - cmake . -DCMAKE_C_FLAGS=-m64 -DCMAKE_CXX_FLAGS=-m64
   - make
