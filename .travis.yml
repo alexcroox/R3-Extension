@@ -34,7 +34,8 @@ script:
   - cd build
   - cmake . -DCMAKE_C_FLAGS=-m64 -DCMAKE_CXX_FLAGS=-m64
   - make
-  - if [ ! -z "$TRAVIS_TAG" ]; then zip "R3-Extension-$TRAVIS_TAG-Linux.zip" libr3_extension_x64.so; fi
+  - mv libr3_extension_x64.so r3_extension_x64.so
+  - if [ ! -z "$TRAVIS_TAG" ]; then zip "R3-Extension-$TRAVIS_TAG-Linux.zip" r3_extension_x64.so; fi
 deploy:
   provider: releases
   api_key:
