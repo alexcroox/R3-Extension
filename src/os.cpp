@@ -4,6 +4,8 @@
 
 #ifdef _WIN32
 #include "shlobj.h"
+#else
+#include <sys/stat.h>
 #endif
 
 namespace r3 {
@@ -17,7 +19,8 @@ namespace os {
         free(buffer);
         return value;
 #else
-        return value == nullptr ? defaultValue : std::string(std::getenv(name.c_str()));
+        auto value = std::getenv(name.c_str());
+        return value == nullptr ? defaultValue : std::string(value);
 #endif
     }
 
@@ -26,8 +29,8 @@ namespace os {
         return GetFileAttributes(directory.c_str()) != INVALID_FILE_ATTRIBUTES;
 #else
         struct stat info;
-        auto result = stat(directory.c_str(), &info);
-        return result == 0 && (myStat.st_mode & S_IFMT == S_IFDIR);
+        stat(directory.c_str(), &info);
+        return S_ISDIR(info.st_mode);
 #endif
     }
 

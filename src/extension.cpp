@@ -42,8 +42,9 @@ namespace {
 #else
             extensionFolder = os::getEnvironmentVariableValue("HOME", ".");
 #endif
+            extensionFolder += os::pathSeparator + EXTENSION_FOLDER;
         }
-        return extensionFolder + os::pathSeparator + EXTENSION_FOLDER;
+        return extensionFolder;
     }
 
     void stripDoubleQuotedParams(std::vector<std::string>& params) {
