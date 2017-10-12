@@ -66,6 +66,224 @@ namespace {
         return successfull;
     }
 
+    bool isQueryEmpty(std::ostringstream& query) {
+        return query.tellp() == std::fpos_t(0);
+    }
+
+    void tryAddInsertStatementOrSeparator(std::ostringstream& query, const std::string& queryFragment) {
+        if (isQueryEmpty(query)) {
+            query << queryFragment;
+        } else {
+            query << ",";
+        }
+    }
+
+    void tryConcatenateQueries(std::ostringstream& query, std::ostringstream& otherQuery) {
+        if (!isQueryEmpty(otherQuery)) {
+            query << otherQuery.str() << ";";
+        }
+    }
+
+    void processInfantryCommand(std::ostringstream& query, const std::vector<std::string>& params) {
+        uint32_t replayId = parseUnsigned(params[0]);
+        std::string playerId = params[1];
+        uint32_t entityId = parseUnsigned(params[2]);
+        std::string unitName = params[3];
+        uint32_t unitFaction = parseUnsigned(params[4]);
+        std::string unitClass = params[5];
+        std::string unitGroupId = params[6];
+        uint32_t unitIsLeader = parseUnsigned(params[7]);
+        std::string unitIcon = params[8];
+        std::string unitWeapon = params[9];
+        std::string unitLauncher = params[10];
+        std::string unitData = params[11];
+        uint32_t missionTime = parseUnsigned(params[12]);
+        log::logger->debug("Inserting into 'infantry' values mission '{}', playerId '{}', entityId '{}', name '{}', faction '{}', class '{}', group '{}', leader '{}', icon '{}', weapon '{}', launcher '{}', data '{}', mission_time '{}'.",
+            replayId, playerId, entityId, unitName, unitFaction, unitClass, unitGroupId, unitIsLeader, unitIcon, unitWeapon, unitLauncher, unitData, missionTime);
+        query << "(";
+        query << replayId << ",";
+        escapeAndAddStringToQueryWithComa(playerId, query);
+        query << entityId << ",";
+        escapeAndAddStringToQueryWithComa(unitName, query);
+        query << unitFaction << ",";
+        escapeAndAddStringToQueryWithComa(unitClass, query);
+        escapeAndAddStringToQueryWithComa(unitGroupId, query);
+        query << unitIsLeader << ",";
+        escapeAndAddStringToQueryWithComa(unitIcon, query);
+        escapeAndAddStringToQueryWithComa(unitWeapon, query);
+        escapeAndAddStringToQueryWithComa(unitLauncher, query);
+        escapeAndAddStringToQueryWithComa(unitData, query);
+        query << missionTime << ")";
+    }
+
+    void processInfantryPositionsCommand(std::ostringstream& query, const std::vector<std::string>& params) {
+        uint32_t replayId = parseUnsigned(params[0]);
+        uint32_t entityId = parseUnsigned(params[1]);
+        double posX = parseFloat(params[2]);
+        double posY = parseFloat(params[3]);
+        uint32_t direction = parseUnsigned(params[4]);
+        uint32_t keyFrame = parseUnsigned(params[5]);
+        uint32_t isDead = parseUnsigned(params[6]);
+        uint32_t missionTime = parseUnsigned(params[7]);
+        log::logger->debug("Inserting into 'infantry_positions' values mission '{}', entity_id '{}', x '{}', y '{}', direction '{}', key_frame '{}', is_dead '{}', mission_time '{}'.",
+            replayId, entityId, posX, posY, direction, keyFrame, isDead, missionTime);
+        query << "(";
+        query << replayId << ",";
+        query << entityId << ",";
+        query << posX << ",";
+        query << posY << ",";
+        query << direction << ",";
+        query << keyFrame << ",";
+        query << isDead << ",";
+        query << missionTime << ")";
+    }
+
+    void processVehiclesCommand(std::ostringstream& query, const std::vector<std::string>& params) {
+        uint32_t replayId = parseUnsigned(params[0]);
+        uint32_t entityId = parseUnsigned(params[1]);
+        std::string vehicleClass = params[2];
+        std::string vehicleIcon = params[3];
+        std::string vehicleIconPath = params[4];
+        uint32_t missionTime = parseUnsigned(params[5]);
+        log::logger->debug("Inserting into 'vehicles' values mission '{}', entity_id '{}', class '{}', icon '{}', icon_path '{}', mission_time '{}'.",
+            replayId, entityId, vehicleClass, vehicleIcon, vehicleIconPath, missionTime);
+        query << "(";
+        query << replayId << ",";
+        query << entityId << ",";
+        escapeAndAddStringToQueryWithComa(vehicleClass, query);
+        escapeAndAddStringToQueryWithComa(vehicleIcon, query);
+        escapeAndAddStringToQueryWithComa(vehicleIconPath, query);
+        query << missionTime << ")";
+    }
+
+    void processVehiclePositionsCommand(std::ostringstream& query, const std::vector<std::string>& params) {
+        uint32_t replayId = parseUnsigned(params[0]);
+        uint32_t entityId = parseUnsigned(params[1]);
+        double posX = parseFloat(params[2]);
+        double posY = parseFloat(params[3]);
+        double posZ = parseFloat(params[4]);
+        uint32_t direction = parseUnsigned(params[5]);
+        uint32_t keyFrame = parseUnsigned(params[6]);
+        std::string driver = params[7];
+        std::string crew = params[8];
+        std::string cargo = params[9];
+        uint32_t isDead = parseUnsigned(params[10]);
+        uint32_t missionTime = parseUnsigned(params[11]);
+        log::logger->debug("Inserting into 'vehicle_positions' values mission '{}', entity_id '{}', x '{}', y '{}', z '{}', direction '{}', key_frame '{}', driver '{}', crew '{}', cargo '{}', is_dead '{}', mission_time '{}'.",
+            replayId, entityId, posX, posY, posZ, direction, keyFrame, driver, crew, cargo, isDead, missionTime);
+        query << "(";
+        query << replayId << ",";
+        query << entityId << ",";
+        query << posX << ",";
+        query << posY << ",";
+        query << posZ << ",";
+        query << direction << ",";
+        query << keyFrame << ",";
+        escapeAndAddStringToQueryWithComa(driver, query);
+        escapeAndAddStringToQueryWithComa(crew, query);
+        escapeAndAddStringToQueryWithComa(cargo, query);
+        query << isDead << ",";
+        query << missionTime << ")";
+    }
+
+    void processEventsConnectionsCommand(std::ostringstream& query, const std::vector<std::string>& params) {
+        uint32_t replayId = parseUnsigned(params[0]);
+        uint32_t missionTime = parseUnsigned(params[1]);
+        std::string type = params[2];
+        std::string playerId = params[3];
+        std::string name = params[4];
+        log::logger->debug("Inserting into 'events_connections' values mission '{}', mission_time '{}', type '{}', player_id '{}', player_name '{}'.",
+            replayId, missionTime, type, playerId, name);
+        query << "(";
+        query << replayId << ",";
+        query << missionTime << ",";
+        escapeAndAddStringToQueryWithComa(type, query);
+        escapeAndAddStringToQueryWithComa(playerId, query);
+        escapeAndAddStringToQuery(name, query);
+        query << ")";
+    }
+
+    void processEventsGetInOutCommand(std::ostringstream& query, const std::vector<std::string>& params) {
+        uint32_t replayId = parseUnsigned(params[0]);
+        uint32_t missionTime = parseUnsigned(params[1]);
+        std::string type = params[2];
+        uint32_t entityUnit = parseUnsigned(params[3]);
+        uint32_t entityVehicle = parseUnsigned(params[4]);
+        log::logger->debug("Inserting into 'events_get_in_out' values mission '{}', mission_time '{}', type '{}', entity_unit '{}', entity_vehicle '{}'.",
+            replayId, missionTime, type, entityUnit, entityVehicle);
+        query << "(";
+        query << replayId << ",";
+        query << missionTime << ",";
+        escapeAndAddStringToQueryWithComa(type, query);
+        query << entityUnit << ",";
+        query << entityVehicle << ")";
+    }
+
+    void processEventsProjectileCommand(std::ostringstream& query, const std::vector<std::string>& params) {
+        uint32_t replayId = parseUnsigned(params[0]);
+        uint32_t missionTime = parseUnsigned(params[1]);
+        std::string grenadeType = params[2];
+        uint32_t entityAttacker = parseUnsigned(params[3]);
+        double posX = parseFloat(params[4]);
+        double posY = parseFloat(params[5]);
+        std::string projectileName = params[6];
+        log::logger->debug("Inserting into 'events_projectile' values mission '{}', mission_time '{}', type '{}', entity_attacker '{}', x '{}', y '{}', projectile_name '{}'.",
+            replayId, missionTime, grenadeType, entityAttacker, posX, posY, projectileName);
+        query << "(";
+        query << replayId << ",";
+        query << missionTime << ",";
+        escapeAndAddStringToQueryWithComa(grenadeType, query);
+        query << entityAttacker << ",";
+        query << posX << ",";
+        query << posY << ",";
+        escapeAndAddStringToQuery(projectileName, query);
+        query << ")";
+    }
+
+    void processEventsDownedCommand(std::ostringstream& query, const std::vector<std::string>& params) {
+        uint32_t replayId = parseUnsigned(params[0]);
+        uint32_t missionTime = parseUnsigned(params[1]);
+        std::string type = params[2];
+        uint32_t entityAttacker = parseUnsigned(params[3]);
+        uint32_t entityVictim = parseUnsigned(params[4]);
+        uint32_t attackerVehicle = parseUnsigned(params[5]);
+        uint32_t sameFaction = parseUnsigned(params[6]);
+        uint32_t attackerDistance = parseUnsigned(params[7]);
+        std::string weapon = params[8];
+        log::logger->debug("Inserting into 'events_downed' values mission '{}', mission_time '{}', type '{}', entity_attacker '{}', entity_victim '{}', attacker_vehicle '{}', same_faction '{}', distance '{}', weapon '{}'.",
+            replayId, missionTime, type, entityAttacker, entityVictim, attackerVehicle, sameFaction, attackerDistance, weapon);
+        query << "(";
+        query << replayId << ",";
+        query << missionTime << ",";
+        escapeAndAddStringToQueryWithComa(type, query);
+        query << entityAttacker << ",";
+        query << entityVictim << ",";
+        query << attackerVehicle << ",";
+        query << sameFaction << ",";
+        query << attackerDistance << ",";
+        escapeAndAddStringToQuery(weapon, query);
+        query << ")";
+    }
+
+    void processEventsMissileCommand(std::ostringstream& query, const std::vector<std::string>& params) {
+        uint32_t replayId = parseUnsigned(params[0]);
+        uint32_t missionTime = parseUnsigned(params[1]);
+        std::string type = params[2];
+        uint32_t entityAttacker = parseUnsigned(params[3]);
+        uint32_t entityVictim = parseUnsigned(params[4]);
+        std::string weapon = params[5];
+        log::logger->debug("Inserting into 'events_missile' values mission '{}', mission_time '{}', type '{}', entity_attacker '{}', entity_victim '{}', weapon '{}'.",
+            replayId, missionTime, type, entityAttacker, entityVictim, weapon);
+        query << "(";
+        query << replayId << ",";
+        query << missionTime << ",";
+        escapeAndAddStringToQueryWithComa(type, query);
+        query << entityAttacker << ",";
+        query << entityVictim << ",";
+        escapeAndAddStringToQuery(weapon, query);
+        query << ")";
+    }
+
     bool initialize(const std::string& host_, uint32_t port_, const std::string& database_, const std::string& user_, const std::string& password_) {
         host = host_;
         port = port_;
@@ -174,7 +392,9 @@ namespace {
     bool processRequests(const std::vector<Request>& requests) {
         if (requests.empty()) { return false; }
         bool hasPoison = false;
-        std::ostringstream query;
+        std::ostringstream query, infantryQuery, infantryPositionsQuery, vehiclesQuery,
+            vehiclePositionsQuery, eventsConnectionsQuery, eventsGetInOutQuery,
+            eventsProjectileQuery, eventsDownedQuery, eventsMissileQuery;
         for (const auto& request : requests) {
             hasPoison = hasPoison || request.command == REQUEST_COMMAND_POISON;
             auto paramsSize = request.params.size();
@@ -186,201 +406,55 @@ namespace {
                 query << fmt::format("UPDATE missions SET last_event_time = UTC_TIMESTAMP(), last_mission_time = {} WHERE id = {} LIMIT 1;", missionTime, replayId);
             }
             else if (request.command == "infantry" && paramsSize == 13) {
-                uint32_t replayId = parseUnsigned(request.params[0]);
-                std::string playerId = request.params[1];
-                uint32_t entityId = parseUnsigned(request.params[2]);
-                std::string unitName = request.params[3];
-                uint32_t unitFaction = parseUnsigned(request.params[4]);
-                std::string unitClass = request.params[5];
-                std::string unitGroupId = request.params[6];
-                uint32_t unitIsLeader = parseUnsigned(request.params[7]);
-                std::string unitIcon = request.params[8];
-                std::string unitWeapon = request.params[9];
-                std::string unitLauncher = request.params[10];
-                std::string unitData = request.params[11];
-                uint32_t missionTime = parseUnsigned(request.params[12]);
-                log::logger->debug("Inserting into 'infantry' values mission '{}', playerId '{}', entityId '{}', name '{}', faction '{}', class '{}', group '{}', leader '{}', icon '{}', weapon '{}', launcher '{}', data '{}', mission_time '{}'.",
-                    replayId, playerId, entityId, unitName, unitFaction, unitClass, unitGroupId, unitIsLeader, unitIcon, unitWeapon, unitLauncher, unitData, missionTime);
-                query << "INSERT INTO infantry(mission, player_id, entity_id, name, faction, class, `group`, leader, icon, weapon, launcher, data, mission_time) VALUES (";
-                query << replayId << ",";
-                escapeAndAddStringToQueryWithComa(playerId, query);
-                query << entityId << ",";
-                escapeAndAddStringToQueryWithComa(unitName, query);
-                query << unitFaction << ",";
-                escapeAndAddStringToQueryWithComa(unitClass, query);
-                escapeAndAddStringToQueryWithComa(unitGroupId, query);
-                query << unitIsLeader << ",";
-                escapeAndAddStringToQueryWithComa(unitIcon, query);
-                escapeAndAddStringToQueryWithComa(unitWeapon, query);
-                escapeAndAddStringToQueryWithComa(unitLauncher, query);
-                escapeAndAddStringToQueryWithComa(unitData, query);
-                query << missionTime << ");";
+                tryAddInsertStatementOrSeparator(infantryQuery, "INSERT INTO infantry(mission, player_id, entity_id, name, faction, class, `group`, leader, icon, weapon, launcher, data, mission_time) VALUES ");
+                processInfantryCommand(infantryQuery, request.params);
             }
             else if (request.command == "infantry_positions" && paramsSize == 8) {
-                uint32_t replayId = parseUnsigned(request.params[0]);
-                uint32_t entityId = parseUnsigned(request.params[1]);
-                double posX = parseFloat(request.params[2]);
-                double posY = parseFloat(request.params[3]);
-                uint32_t direction = parseUnsigned(request.params[4]);
-                uint32_t keyFrame = parseUnsigned(request.params[5]);
-                uint32_t isDead = parseUnsigned(request.params[6]);
-                uint32_t missionTime = parseUnsigned(request.params[7]);
-                log::logger->debug("Inserting into 'infantry_positions' values mission '{}', entity_id '{}', x '{}', y '{}', direction '{}', key_frame '{}', is_dead '{}', mission_time '{}'.",
-                    replayId, entityId, posX, posY, direction, keyFrame, isDead, missionTime);
-                query << "INSERT INTO infantry_positions(mission, entity_id, x, y, direction, key_frame, is_dead, mission_time) VALUES (";
-                query << replayId << ",";
-                query << entityId << ",";
-                query << posX << ",";
-                query << posY << ",";
-                query << direction << ",";
-                query << keyFrame << ",";
-                query << isDead << ",";
-                query << missionTime << ");";
+                tryAddInsertStatementOrSeparator(infantryPositionsQuery, "INSERT INTO infantry_positions(mission, entity_id, x, y, direction, key_frame, is_dead, mission_time) VALUES ");
+                processInfantryPositionsCommand(infantryPositionsQuery, request.params);
             }
             else if (request.command == "vehicles" && paramsSize == 6) {
-                uint32_t replayId = parseUnsigned(request.params[0]);
-                uint32_t entityId = parseUnsigned(request.params[1]);
-                std::string vehicleClass = request.params[2];
-                std::string vehicleIcon = request.params[3];
-                std::string vehicleIconPath = request.params[4];
-                uint32_t missionTime = parseUnsigned(request.params[5]);
-                log::logger->debug("Inserting into 'vehicles' values mission '{}', entity_id '{}', class '{}', icon '{}', icon_path '{}', mission_time '{}'.",
-                    replayId, entityId, vehicleClass, vehicleIcon, vehicleIconPath, missionTime);
-                query << "INSERT INTO vehicles(mission, entity_id, class, icon, icon_path, mission_time) VALUES (";
-                query << replayId << ",";
-                query << entityId << ",";
-                escapeAndAddStringToQueryWithComa(vehicleClass, query);
-                escapeAndAddStringToQueryWithComa(vehicleIcon, query);
-                escapeAndAddStringToQueryWithComa(vehicleIconPath, query);
-                query << missionTime << ");";
+                tryAddInsertStatementOrSeparator(vehiclesQuery, "INSERT INTO vehicles(mission, entity_id, class, icon, icon_path, mission_time) VALUES ");
+                processVehiclesCommand(vehiclesQuery, request.params);
             }
             else if (request.command == "vehicle_positions" && paramsSize == 12) {
-                uint32_t replayId = parseUnsigned(request.params[0]);
-                uint32_t entityId = parseUnsigned(request.params[1]);
-                double posX = parseFloat(request.params[2]);
-                double posY = parseFloat(request.params[3]);
-                double posZ = parseFloat(request.params[4]);
-                uint32_t direction = parseUnsigned(request.params[5]);
-                uint32_t keyFrame = parseUnsigned(request.params[6]);
-                std::string driver = request.params[7];
-                std::string crew = request.params[8];
-                std::string cargo = request.params[9];
-                uint32_t isDead = parseUnsigned(request.params[10]);
-                uint32_t missionTime = parseUnsigned(request.params[11]);
-                log::logger->debug("Inserting into 'vehicle_positions' values mission '{}', entity_id '{}', x '{}', y '{}', z '{}', direction '{}', key_frame '{}', driver '{}', crew '{}', cargo '{}', is_dead '{}', mission_time '{}'.",
-                    replayId, entityId, posX, posY, posZ, direction, keyFrame, driver, crew, cargo, isDead, missionTime);
-                query << "INSERT INTO vehicle_positions(mission, entity_id, x, y, z, direction, key_frame, driver, crew, cargo, is_dead, mission_time) VALUES (";
-                query << replayId << ",";
-                query << entityId << ",";
-                query << posX << ",";
-                query << posY << ",";
-                query << posZ << ",";
-                query << direction << ",";
-                query << keyFrame << ",";
-                escapeAndAddStringToQueryWithComa(driver, query);
-                escapeAndAddStringToQueryWithComa(crew, query);
-                escapeAndAddStringToQueryWithComa(cargo, query);
-                query << isDead << ",";
-                query << missionTime << ");";
+                tryAddInsertStatementOrSeparator(vehiclePositionsQuery, "INSERT INTO vehicle_positions(mission, entity_id, x, y, z, direction, key_frame, driver, crew, cargo, is_dead, mission_time) VALUES ");
+                processVehiclePositionsCommand(vehiclePositionsQuery, request.params);
             }
             else if (request.command == "events_connections" && paramsSize == 5) {
-                uint32_t replayId = parseUnsigned(request.params[0]);
-                uint32_t missionTime = parseUnsigned(request.params[1]);
-                std::string type = request.params[2];
-                std::string playerId = request.params[3];
-                std::string name = request.params[4];
-                log::logger->debug("Inserting into 'events_connections' values mission '{}', mission_time '{}', type '{}', player_id '{}', player_name '{}'.",
-                    replayId, missionTime, type, playerId, name);
-                query << "INSERT INTO events_connections(mission, mission_time, type, player_id, player_name) VALUES (";
-                query << replayId << ",";
-                query << missionTime << ",";
-                escapeAndAddStringToQueryWithComa(type, query);
-                escapeAndAddStringToQueryWithComa(playerId, query);
-                escapeAndAddStringToQuery(name, query);
-                query << ");";
+                tryAddInsertStatementOrSeparator(eventsConnectionsQuery, "INSERT INTO events_connections(mission, mission_time, type, player_id, player_name) VALUES ");
+                processEventsConnectionsCommand(eventsConnectionsQuery, request.params);
             }
             else if (request.command == "events_get_in_out" && paramsSize == 5) {
-                uint32_t replayId = parseUnsigned(request.params[0]);
-                uint32_t missionTime = parseUnsigned(request.params[1]);
-                std::string type = request.params[2];
-                uint32_t entityUnit = parseUnsigned(request.params[3]);
-                uint32_t entityVehicle = parseUnsigned(request.params[4]);
-                log::logger->debug("Inserting into 'events_get_in_out' values mission '{}', mission_time '{}', type '{}', entity_unit '{}', entity_vehicle '{}'.",
-                    replayId, missionTime, type, entityUnit, entityVehicle);
-                query << "INSERT INTO events_get_in_out(mission, mission_time, type, entity_unit, entity_vehicle) VALUES (";
-                query << replayId << ",";
-                query << missionTime << ",";
-                escapeAndAddStringToQueryWithComa(type, query);
-                query << entityUnit << ",";
-                query << entityVehicle << ");";
+                tryAddInsertStatementOrSeparator(eventsGetInOutQuery, "INSERT INTO events_get_in_out(mission, mission_time, type, entity_unit, entity_vehicle) VALUES ");
+                processEventsGetInOutCommand(eventsGetInOutQuery, request.params);
             }
             else if (request.command == "events_projectile" && paramsSize == 7) {
-                uint32_t replayId = parseUnsigned(request.params[0]);
-                uint32_t missionTime = parseUnsigned(request.params[1]);
-                std::string grenadeType = request.params[2];
-                uint32_t entityAttacker = parseUnsigned(request.params[3]);
-                double posX = parseFloat(request.params[4]);
-                double posY = parseFloat(request.params[5]);
-                std::string projectileName = request.params[6];
-                log::logger->debug("Inserting into 'events_projectile' values mission '{}', mission_time '{}', type '{}', entity_attacker '{}', x '{}', y '{}', projectile_name '{}'.",
-                    replayId, missionTime, grenadeType, entityAttacker, posX, posY, projectileName);
-                query << "INSERT INTO events_projectile(mission, mission_time, type, entity_attacker, x, y, projectile_name) VALUES (";
-                query << replayId << ",";
-                query << missionTime << ",";
-                escapeAndAddStringToQueryWithComa(grenadeType, query);
-                query << entityAttacker << ",";
-                query << posX << ",";
-                query << posY << ",";
-                escapeAndAddStringToQuery(projectileName, query);
-                query << ");";
+                tryAddInsertStatementOrSeparator(eventsProjectileQuery, "INSERT INTO events_projectile(mission, mission_time, type, entity_attacker, x, y, projectile_name) VALUES ");
+                processEventsProjectileCommand(eventsProjectileQuery, request.params);
             }
             else if (request.command == "events_downed" && paramsSize == 9) {
-                uint32_t replayId = parseUnsigned(request.params[0]);
-                uint32_t missionTime = parseUnsigned(request.params[1]);
-                std::string type = request.params[2];
-                uint32_t entityAttacker = parseUnsigned(request.params[3]);
-                uint32_t entityVictim = parseUnsigned(request.params[4]);
-                uint32_t attackerVehicle = parseUnsigned(request.params[5]);
-                uint32_t sameFaction = parseUnsigned(request.params[6]);
-                uint32_t attackerDistance = parseUnsigned(request.params[7]);
-                std::string weapon = request.params[8];
-                log::logger->debug("Inserting into 'events_downed' values mission '{}', mission_time '{}', type '{}', entity_attacker '{}', entity_victim '{}', attacker_vehicle '{}', same_faction '{}', distance '{}', weapon '{}'.",
-                    replayId, missionTime, type, entityAttacker, entityVictim, attackerVehicle, sameFaction, attackerDistance, weapon);
-                query << "INSERT INTO events_downed(mission, mission_time, type, entity_attacker, entity_victim, attacker_vehicle, same_faction, distance, weapon) VALUES (";
-                query << replayId << ",";
-                query << missionTime << ",";
-                escapeAndAddStringToQueryWithComa(type, query);
-                query << entityAttacker << ",";
-                query << entityVictim << ",";
-                query << attackerVehicle << ",";
-                query << sameFaction << ",";
-                query << attackerDistance << ",";
-                escapeAndAddStringToQuery(weapon, query);
-                query << ");";
+                tryAddInsertStatementOrSeparator(eventsDownedQuery, "INSERT INTO events_downed(mission, mission_time, type, entity_attacker, entity_victim, attacker_vehicle, same_faction, distance, weapon) VALUES ");
+                processEventsDownedCommand(eventsDownedQuery, request.params);
             }
             else if (request.command == "events_missile" && paramsSize == 6) {
-                uint32_t replayId = parseUnsigned(request.params[0]);
-                uint32_t missionTime = parseUnsigned(request.params[1]);
-                std::string type = request.params[2];
-                uint32_t entityAttacker = parseUnsigned(request.params[3]);
-                uint32_t entityVictim = parseUnsigned(request.params[4]);
-                std::string weapon = request.params[5];
-                log::logger->debug("Inserting into 'events_missile' values mission '{}', mission_time '{}', type '{}', entity_attacker '{}', entity_victim '{}', weapon '{}'.",
-                    replayId, missionTime, type, entityAttacker, entityVictim, weapon);
-                query << "INSERT INTO events_missile(mission, mission_time, type, entity_attacker, entity_victim, weapon) VALUES (";
-                query << replayId << ",";
-                query << missionTime << ",";
-                escapeAndAddStringToQueryWithComa(type, query);
-                query << entityAttacker << ",";
-                query << entityVictim << ",";
-                escapeAndAddStringToQuery(weapon, query);
-                query << ");";
+                tryAddInsertStatementOrSeparator(eventsMissileQuery, "INSERT INTO events_missile(mission, mission_time, type, entity_attacker, entity_victim, weapon) VALUES ");
+                processEventsMissileCommand(eventsMissileQuery, request.params);
             }
             else {
-                log::logger->debug("Invlaid command type '{}'!", request.command);
+                log::logger->debug("Invlaid command type '{}' with param size '{}'!", request.command, request.params.size());
             }
         }
-        log::logger->trace("Multi statement query: {}", query.str()),
+        tryConcatenateQueries(query, infantryQuery);
+        tryConcatenateQueries(query, infantryPositionsQuery);
+        tryConcatenateQueries(query, vehiclesQuery);
+        tryConcatenateQueries(query, vehiclePositionsQuery);
+        tryConcatenateQueries(query, eventsConnectionsQuery);
+        tryConcatenateQueries(query, eventsGetInOutQuery);
+        tryConcatenateQueries(query, eventsProjectileQuery);
+        tryConcatenateQueries(query, eventsDownedQuery);
+        tryConcatenateQueries(query, eventsMissileQuery);
+        log::logger->trace("Multi statement query: {}", query.str());
         executeMultiStatementQuery(query);
         return hasPoison;
     }
