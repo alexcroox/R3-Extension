@@ -66,21 +66,11 @@ namespace {
         return successfull;
     }
 
-    bool isQueryEmpty(std::ostringstream& query) {
-        return query.tellp() == std::fpos_t(0);
-    }
-
-    void tryAddInsertStatementOrSeparator(std::ostringstream& query, const std::string& queryFragment) {
-        if (isQueryEmpty(query)) {
-            query << queryFragment;
-        } else {
-            query << ",";
-        }
-    }
-
-    void tryConcatenateQueries(std::ostringstream& query, std::ostringstream& otherQuery) {
-        if (!isQueryEmpty(otherQuery)) {
-            query << otherQuery.str() << ";";
+    void tryConcatenateQueries(std::ostringstream& query, std::ostringstream& valuesQueryFragment, const std::string& insertQueryFragement) {
+        std::string valuesQueryFragmentString = valuesQueryFragment.str();
+        if (!valuesQueryFragmentString.empty()) {
+            valuesQueryFragmentString[valuesQueryFragmentString.length() - 1] = ';';
+            query << insertQueryFragement << valuesQueryFragmentString;
         }
     }
 
@@ -113,7 +103,7 @@ namespace {
         escapeAndAddStringToQueryWithComa(unitWeapon, query);
         escapeAndAddStringToQueryWithComa(unitLauncher, query);
         escapeAndAddStringToQueryWithComa(unitData, query);
-        query << missionTime << ")";
+        query << missionTime << "),";
     }
 
     void processInfantryPositionsCommand(std::ostringstream& query, const std::vector<std::string>& params) {
@@ -135,7 +125,7 @@ namespace {
         query << direction << ",";
         query << keyFrame << ",";
         query << isDead << ",";
-        query << missionTime << ")";
+        query << missionTime << "),";
     }
 
     void processVehiclesCommand(std::ostringstream& query, const std::vector<std::string>& params) {
@@ -153,7 +143,7 @@ namespace {
         escapeAndAddStringToQueryWithComa(vehicleClass, query);
         escapeAndAddStringToQueryWithComa(vehicleIcon, query);
         escapeAndAddStringToQueryWithComa(vehicleIconPath, query);
-        query << missionTime << ")";
+        query << missionTime << "),";
     }
 
     void processVehiclePositionsCommand(std::ostringstream& query, const std::vector<std::string>& params) {
@@ -183,7 +173,7 @@ namespace {
         escapeAndAddStringToQueryWithComa(crew, query);
         escapeAndAddStringToQueryWithComa(cargo, query);
         query << isDead << ",";
-        query << missionTime << ")";
+        query << missionTime << "),";
     }
 
     void processEventsConnectionsCommand(std::ostringstream& query, const std::vector<std::string>& params) {
@@ -200,7 +190,7 @@ namespace {
         escapeAndAddStringToQueryWithComa(type, query);
         escapeAndAddStringToQueryWithComa(playerId, query);
         escapeAndAddStringToQuery(name, query);
-        query << ")";
+        query << "),";
     }
 
     void processEventsGetInOutCommand(std::ostringstream& query, const std::vector<std::string>& params) {
@@ -216,7 +206,7 @@ namespace {
         query << missionTime << ",";
         escapeAndAddStringToQueryWithComa(type, query);
         query << entityUnit << ",";
-        query << entityVehicle << ")";
+        query << entityVehicle << "),";
     }
 
     void processEventsProjectileCommand(std::ostringstream& query, const std::vector<std::string>& params) {
@@ -237,7 +227,7 @@ namespace {
         query << posX << ",";
         query << posY << ",";
         escapeAndAddStringToQuery(projectileName, query);
-        query << ")";
+        query << "),";
     }
 
     void processEventsDownedCommand(std::ostringstream& query, const std::vector<std::string>& params) {
@@ -262,7 +252,7 @@ namespace {
         query << sameFaction << ",";
         query << attackerDistance << ",";
         escapeAndAddStringToQuery(weapon, query);
-        query << ")";
+        query << "),";
     }
 
     void processEventsMissileCommand(std::ostringstream& query, const std::vector<std::string>& params) {
@@ -281,7 +271,7 @@ namespace {
         query << entityAttacker << ",";
         query << entityVictim << ",";
         escapeAndAddStringToQuery(weapon, query);
-        query << ")";
+        query << "),";
     }
 
     bool initialize(const std::string& host_, uint32_t port_, const std::string& database_, const std::string& user_, const std::string& password_) {
@@ -406,54 +396,45 @@ namespace {
                 query << fmt::format("UPDATE missions SET last_event_time = UTC_TIMESTAMP(), last_mission_time = {} WHERE id = {} LIMIT 1;", missionTime, replayId);
             }
             else if (request.command == "infantry" && paramsSize == 13) {
-                tryAddInsertStatementOrSeparator(infantryQuery, "INSERT INTO infantry(mission, player_id, entity_id, name, faction, class, `group`, leader, icon, weapon, launcher, data, mission_time) VALUES ");
                 processInfantryCommand(infantryQuery, request.params);
             }
             else if (request.command == "infantry_positions" && paramsSize == 8) {
-                tryAddInsertStatementOrSeparator(infantryPositionsQuery, "INSERT INTO infantry_positions(mission, entity_id, x, y, direction, key_frame, is_dead, mission_time) VALUES ");
                 processInfantryPositionsCommand(infantryPositionsQuery, request.params);
             }
             else if (request.command == "vehicles" && paramsSize == 6) {
-                tryAddInsertStatementOrSeparator(vehiclesQuery, "INSERT INTO vehicles(mission, entity_id, class, icon, icon_path, mission_time) VALUES ");
                 processVehiclesCommand(vehiclesQuery, request.params);
             }
             else if (request.command == "vehicle_positions" && paramsSize == 12) {
-                tryAddInsertStatementOrSeparator(vehiclePositionsQuery, "INSERT INTO vehicle_positions(mission, entity_id, x, y, z, direction, key_frame, driver, crew, cargo, is_dead, mission_time) VALUES ");
                 processVehiclePositionsCommand(vehiclePositionsQuery, request.params);
             }
             else if (request.command == "events_connections" && paramsSize == 5) {
-                tryAddInsertStatementOrSeparator(eventsConnectionsQuery, "INSERT INTO events_connections(mission, mission_time, type, player_id, player_name) VALUES ");
                 processEventsConnectionsCommand(eventsConnectionsQuery, request.params);
             }
             else if (request.command == "events_get_in_out" && paramsSize == 5) {
-                tryAddInsertStatementOrSeparator(eventsGetInOutQuery, "INSERT INTO events_get_in_out(mission, mission_time, type, entity_unit, entity_vehicle) VALUES ");
                 processEventsGetInOutCommand(eventsGetInOutQuery, request.params);
             }
             else if (request.command == "events_projectile" && paramsSize == 7) {
-                tryAddInsertStatementOrSeparator(eventsProjectileQuery, "INSERT INTO events_projectile(mission, mission_time, type, entity_attacker, x, y, projectile_name) VALUES ");
                 processEventsProjectileCommand(eventsProjectileQuery, request.params);
             }
             else if (request.command == "events_downed" && paramsSize == 9) {
-                tryAddInsertStatementOrSeparator(eventsDownedQuery, "INSERT INTO events_downed(mission, mission_time, type, entity_attacker, entity_victim, attacker_vehicle, same_faction, distance, weapon) VALUES ");
                 processEventsDownedCommand(eventsDownedQuery, request.params);
             }
             else if (request.command == "events_missile" && paramsSize == 6) {
-                tryAddInsertStatementOrSeparator(eventsMissileQuery, "INSERT INTO events_missile(mission, mission_time, type, entity_attacker, entity_victim, weapon) VALUES ");
                 processEventsMissileCommand(eventsMissileQuery, request.params);
             }
             else {
                 log::logger->debug("Invlaid command type '{}' with param size '{}'!", request.command, request.params.size());
             }
         }
-        tryConcatenateQueries(query, infantryQuery);
-        tryConcatenateQueries(query, infantryPositionsQuery);
-        tryConcatenateQueries(query, vehiclesQuery);
-        tryConcatenateQueries(query, vehiclePositionsQuery);
-        tryConcatenateQueries(query, eventsConnectionsQuery);
-        tryConcatenateQueries(query, eventsGetInOutQuery);
-        tryConcatenateQueries(query, eventsProjectileQuery);
-        tryConcatenateQueries(query, eventsDownedQuery);
-        tryConcatenateQueries(query, eventsMissileQuery);
+        tryConcatenateQueries(query, infantryQuery, "INSERT INTO infantry(mission, player_id, entity_id, name, faction, class, `group`, leader, icon, weapon, launcher, data, mission_time) VALUES ");
+        tryConcatenateQueries(query, infantryPositionsQuery, "INSERT INTO infantry_positions(mission, entity_id, x, y, direction, key_frame, is_dead, mission_time) VALUES ");
+        tryConcatenateQueries(query, vehiclesQuery, "INSERT INTO vehicles(mission, entity_id, class, icon, icon_path, mission_time) VALUES ");
+        tryConcatenateQueries(query, vehiclePositionsQuery, "INSERT INTO vehicle_positions(mission, entity_id, x, y, z, direction, key_frame, driver, crew, cargo, is_dead, mission_time) VALUES ");
+        tryConcatenateQueries(query, eventsConnectionsQuery, "INSERT INTO events_connections(mission, mission_time, type, player_id, player_name) VALUES ");
+        tryConcatenateQueries(query, eventsGetInOutQuery, "INSERT INTO events_get_in_out(mission, mission_time, type, entity_unit, entity_vehicle) VALUES ");
+        tryConcatenateQueries(query, eventsProjectileQuery, "INSERT INTO events_projectile(mission, mission_time, type, entity_attacker, x, y, projectile_name) VALUES ");
+        tryConcatenateQueries(query, eventsDownedQuery, "INSERT INTO events_downed(mission, mission_time, type, entity_attacker, entity_victim, attacker_vehicle, same_faction, distance, weapon) VALUES ");
+        tryConcatenateQueries(query, eventsMissileQuery, "INSERT INTO events_missile(mission, mission_time, type, entity_attacker, entity_victim, weapon) VALUES ");
         log::logger->trace("Multi statement query: {}", query.str());
         executeMultiStatementQuery(query);
         return hasPoison;
