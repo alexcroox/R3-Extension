@@ -7,7 +7,7 @@
 #include "shlobj.h"
 #endif
 
-#include "log.h"
+#include "log.hpp"
 #include "os.h"
 #include "config.h"
 
@@ -69,7 +69,7 @@ namespace {
             std::string message = fmt::format("Config file is missing from '{}'!", configFile);
             configError += message;
             log::initialize(extensionFolder, "info");
-            log::logger->error(message);
+            log::error(message);
             return false;
         }
 
@@ -77,7 +77,7 @@ namespace {
         if (!errors.empty()) {
             configError += errors;
             log::initialize(extensionFolder, "info");
-            log::logger->error(configError);
+            log::error(configError);
             return false;
         }
 
@@ -90,7 +90,7 @@ namespace {
         std::string password = config::getDbPassword();
         sql::initialize(host, port, database, user, password);
 
-        log::logger->info("Starting r3_extension version '{}'.", R3_EXTENSION_VERSION);
+        log::info("Starting r3_extension version '{}'.", R3_EXTENSION_VERSION);
         return true;
     }
 
@@ -100,9 +100,7 @@ namespace {
             sqlThread.join();
             sql::finalize();
         }
-        if (log::isInitialized()) {
-            log::logger->info("Stopped r3_extension version '{}'.", R3_EXTENSION_VERSION);
-        }
+        log::info("Stopped r3_extension version '{}'.", R3_EXTENSION_VERSION);
     }
 
     int call(char *output, int outputSize, const char *function, const char **args, int argCount) {
@@ -114,7 +112,7 @@ namespace {
         request.command = std::string(function);
         request.params.insert(request.params.end(), args, args + argCount);
         stripDoubleQuotedParams(request.params);
-        log::logger->trace("Command '{}', params size '{}'.", request.command, request.params.size());
+        log::trace("Command '{}', params size '{}'.", request.command, request.params.size());
         if (request.command == "version") {
             respond(output, fmt::format("\"{}\"", R3_EXTENSION_VERSION));
             return RESPONSE_RETURN_CODE_OK;
@@ -158,9 +156,9 @@ namespace {
             request.command == "update_mission" || 
             request.command == "events_missile") {
 
-            log::logger->trace("Pushing request '{}' to queue .", request.command);
+            log::trace("Pushing request '{}' to queue .", request.command);
             requests.push(request);
-            log::logger->trace("Pushed request '{}' to queue .", request.command);
+            log::trace("Pushed request '{}' to queue .", request.command);
             respond(output, EMPTY_SQF_DATA);
             return RESPONSE_RETURN_CODE_OK;
         }

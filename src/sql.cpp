@@ -3,7 +3,7 @@
 #include <chrono>
 
 #include "extension.h"
-#include "log.h"
+#include "log.hpp"
 
 #include "my_global.h"
 #include "mysql.h"
@@ -35,7 +35,7 @@ namespace {
 
     void escapeAndAddStringToQuery(const std::string& value, std::ostringstream& query) {
         if (value.length() > ESCAPE_BUFFER_MAX_STRING_LENGTH) {
-            log::logger->warn("String '{}' is too long to escape! Extension only supports strings for up to '{}' characters!", value, ESCAPE_BUFFER_MAX_STRING_LENGTH);
+            log::warn("String '{}' is too long to escape! Extension only supports strings for up to '{}' characters!", value, ESCAPE_BUFFER_MAX_STRING_LENGTH);
             query << "''";
             return;
         }
@@ -52,15 +52,15 @@ namespace {
         bool successfull = true;
         if (mysql_query(connection, query.str().c_str())) {
             successfull = false;
-            log::logger->error("Error executing query! Error: '{}'", mysql_error(connection));
-            log::logger->trace("Failed query: {}", query.str());
+            log::error("Error executing query! Error: '{}'", mysql_error(connection));
+            log::trace("Failed query: {}", query.str());
         }
         int status = -1;
         do {
             status = mysql_next_result(connection);
             if (status > 0) {
                 successfull = false;
-                log::logger->error("There was an error executing multiple queries! Status '{}', error: '{}'", status, mysql_error(connection));
+                log::error("There was an error executing multiple queries! Status '{}', error: '{}'", status, mysql_error(connection));
             }
         } while (status == 0);
         return successfull;
@@ -88,7 +88,7 @@ namespace {
         std::string unitLauncher = params[10];
         std::string unitData = params[11];
         uint32_t missionTime = parseUnsigned(params[12]);
-        log::logger->debug("Inserting into 'infantry' values mission '{}', playerId '{}', entityId '{}', name '{}', faction '{}', class '{}', group '{}', leader '{}', icon '{}', weapon '{}', launcher '{}', data '{}', mission_time '{}'.",
+        log::debug("Inserting into 'infantry' values mission '{}', playerId '{}', entityId '{}', name '{}', faction '{}', class '{}', group '{}', leader '{}', icon '{}', weapon '{}', launcher '{}', data '{}', mission_time '{}'.",
             replayId, playerId, entityId, unitName, unitFaction, unitClass, unitGroupId, unitIsLeader, unitIcon, unitWeapon, unitLauncher, unitData, missionTime);
         query << "(";
         query << replayId << ",";
@@ -115,7 +115,7 @@ namespace {
         uint32_t keyFrame = parseUnsigned(params[5]);
         uint32_t isDead = parseUnsigned(params[6]);
         uint32_t missionTime = parseUnsigned(params[7]);
-        log::logger->debug("Inserting into 'infantry_positions' values mission '{}', entity_id '{}', x '{}', y '{}', direction '{}', key_frame '{}', is_dead '{}', mission_time '{}'.",
+        log::debug("Inserting into 'infantry_positions' values mission '{}', entity_id '{}', x '{}', y '{}', direction '{}', key_frame '{}', is_dead '{}', mission_time '{}'.",
             replayId, entityId, posX, posY, direction, keyFrame, isDead, missionTime);
         query << "(";
         query << replayId << ",";
@@ -135,7 +135,7 @@ namespace {
         std::string vehicleIcon = params[3];
         std::string vehicleIconPath = params[4];
         uint32_t missionTime = parseUnsigned(params[5]);
-        log::logger->debug("Inserting into 'vehicles' values mission '{}', entity_id '{}', class '{}', icon '{}', icon_path '{}', mission_time '{}'.",
+        log::debug("Inserting into 'vehicles' values mission '{}', entity_id '{}', class '{}', icon '{}', icon_path '{}', mission_time '{}'.",
             replayId, entityId, vehicleClass, vehicleIcon, vehicleIconPath, missionTime);
         query << "(";
         query << replayId << ",";
@@ -159,7 +159,7 @@ namespace {
         std::string cargo = params[9];
         uint32_t isDead = parseUnsigned(params[10]);
         uint32_t missionTime = parseUnsigned(params[11]);
-        log::logger->debug("Inserting into 'vehicle_positions' values mission '{}', entity_id '{}', x '{}', y '{}', z '{}', direction '{}', key_frame '{}', driver '{}', crew '{}', cargo '{}', is_dead '{}', mission_time '{}'.",
+        log::debug("Inserting into 'vehicle_positions' values mission '{}', entity_id '{}', x '{}', y '{}', z '{}', direction '{}', key_frame '{}', driver '{}', crew '{}', cargo '{}', is_dead '{}', mission_time '{}'.",
             replayId, entityId, posX, posY, posZ, direction, keyFrame, driver, crew, cargo, isDead, missionTime);
         query << "(";
         query << replayId << ",";
@@ -182,7 +182,7 @@ namespace {
         std::string type = params[2];
         std::string playerId = params[3];
         std::string name = params[4];
-        log::logger->debug("Inserting into 'events_connections' values mission '{}', mission_time '{}', type '{}', player_id '{}', player_name '{}'.",
+        log::debug("Inserting into 'events_connections' values mission '{}', mission_time '{}', type '{}', player_id '{}', player_name '{}'.",
             replayId, missionTime, type, playerId, name);
         query << "(";
         query << replayId << ",";
@@ -199,7 +199,7 @@ namespace {
         std::string type = params[2];
         uint32_t entityUnit = parseUnsigned(params[3]);
         uint32_t entityVehicle = parseUnsigned(params[4]);
-        log::logger->debug("Inserting into 'events_get_in_out' values mission '{}', mission_time '{}', type '{}', entity_unit '{}', entity_vehicle '{}'.",
+        log::debug("Inserting into 'events_get_in_out' values mission '{}', mission_time '{}', type '{}', entity_unit '{}', entity_vehicle '{}'.",
             replayId, missionTime, type, entityUnit, entityVehicle);
         query << "(";
         query << replayId << ",";
@@ -217,7 +217,7 @@ namespace {
         double posX = parseFloat(params[4]);
         double posY = parseFloat(params[5]);
         std::string projectileName = params[6];
-        log::logger->debug("Inserting into 'events_projectile' values mission '{}', mission_time '{}', type '{}', entity_attacker '{}', x '{}', y '{}', projectile_name '{}'.",
+        log::debug("Inserting into 'events_projectile' values mission '{}', mission_time '{}', type '{}', entity_attacker '{}', x '{}', y '{}', projectile_name '{}'.",
             replayId, missionTime, grenadeType, entityAttacker, posX, posY, projectileName);
         query << "(";
         query << replayId << ",";
@@ -240,7 +240,7 @@ namespace {
         uint32_t sameFaction = parseUnsigned(params[6]);
         uint32_t attackerDistance = parseUnsigned(params[7]);
         std::string weapon = params[8];
-        log::logger->debug("Inserting into 'events_downed' values mission '{}', mission_time '{}', type '{}', entity_attacker '{}', entity_victim '{}', attacker_vehicle '{}', same_faction '{}', distance '{}', weapon '{}'.",
+        log::debug("Inserting into 'events_downed' values mission '{}', mission_time '{}', type '{}', entity_attacker '{}', entity_victim '{}', attacker_vehicle '{}', same_faction '{}', distance '{}', weapon '{}'.",
             replayId, missionTime, type, entityAttacker, entityVictim, attackerVehicle, sameFaction, attackerDistance, weapon);
         query << "(";
         query << replayId << ",";
@@ -262,7 +262,7 @@ namespace {
         uint32_t entityAttacker = parseUnsigned(params[3]);
         uint32_t entityVictim = parseUnsigned(params[4]);
         std::string weapon = params[5];
-        log::logger->debug("Inserting into 'events_missile' values mission '{}', mission_time '{}', type '{}', entity_attacker '{}', entity_victim '{}', weapon '{}'.",
+        log::debug("Inserting into 'events_missile' values mission '{}', mission_time '{}', type '{}', entity_attacker '{}', entity_victim '{}', weapon '{}'.",
             replayId, missionTime, type, entityAttacker, entityVictim, weapon);
         query << "(";
         query << replayId << ",";
@@ -290,22 +290,22 @@ namespace {
     void run() {
         while (true) {
             std::vector<Request> requests;
-            log::logger->trace("Popping requests from queue.");
+            log::trace("Popping requests from queue.");
             auto popStart = std::chrono::high_resolution_clock::now();
             extension::popAndFill(requests, MAX_PROCESS_REQUEST_COUNT);
             auto popEnd = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> popDuration = popEnd - popStart;
-            log::logger->trace("Popped '{}' requests from queue in '{}' seconds.", requests.size(), popDuration.count());
+            log::trace("Popped '{}' requests from queue in '{}' seconds.", requests.size(), popDuration.count());
             auto lockStart = std::chrono::high_resolution_clock::now();
             std::lock_guard<std::mutex> lock(sessionMutex);
             auto lockEnd = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> lockDuration = lockEnd - lockStart;
-            log::logger->trace("Acquiring lock took '{}' seconds.", lockDuration.count());
+            log::trace("Acquiring lock took '{}' seconds.", lockDuration.count());
             auto processRequestStart = std::chrono::high_resolution_clock::now();
             bool hasPoision = processRequests(requests);
             auto processRequestEnd = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> processRequestDuration = processRequestEnd - processRequestStart;
-            log::logger->trace("Processing '{}' requests took '{}' seconds.", requests.size(), processRequestDuration.count());
+            log::trace("Processing '{}' requests took '{}' seconds.", requests.size(), processRequestDuration.count());
             if (hasPoision) { break; }
         }
     }
@@ -320,13 +320,13 @@ namespace {
 
     std::string connect() {
         if (connected) { return ""; }
-        log::logger->info("Connecting to MySQL server at '{}@{}:{}/{}'.", user, host, port, database);
+        log::info("Connecting to MySQL server at '{}@{}:{}/{}'.", user, host, port, database);
         connected = false;
 
         connection = mysql_init(nullptr);
         if (connection == nullptr) {
             std::string message = fmt::format("Initializing connection failed! Error: '{}'.", mysql_error(connection));
-            log::logger->error(message);
+            log::error(message);
             connected = false;
             return message;
         }
@@ -335,7 +335,7 @@ namespace {
             nullptr, CLIENT_COMPRESS | CLIENT_MULTI_STATEMENTS);
         if (connectResult == nullptr) {
             std::string message = fmt::format("Failed to connect to MySQL server! Error: '{}'", mysql_error(connection));
-            log::logger->error(message);
+            log::error(message);
             connected = false;
             return message;
         }
@@ -353,7 +353,7 @@ namespace {
         double dayTime = parseFloat(request.params[4]);
         std::string addonVersion = request.params[5];
         std::string fileName = request.params[6];
-        log::logger->debug("Inserting into 'missions' values missionName '{}', missionDisplayName'{}', terrain '{}', author '{}' ,dayTime '{}', addonVersion '{}', fileName '{}'.",
+        log::debug("Inserting into 'missions' values missionName '{}', missionDisplayName'{}', terrain '{}', author '{}' ,dayTime '{}', addonVersion '{}', fileName '{}'.",
             missionName, missionDisplayName, terrain, author, dayTime, addonVersion, fileName);
         query << "INSERT INTO missions(name, display_name, terrain, author, day_time, created_at, addon_version, file_name) VALUES(";
         escapeAndAddStringToQueryWithComa(missionName, query);
@@ -367,14 +367,14 @@ namespace {
         query << ");";
         bool successfull = executeMultiStatementQuery(query);
         if (!successfull) {
-            log::logger->error("Error creating mission!");
+            log::error("Error creating mission!");
             response.type = RESPONSE_TYPE_ERROR;
             response.data = "\"Error creating mission!\"";
             return response;
         }
 
         auto replayId = mysql_insert_id(connection);
-        log::logger->debug("New mission id is '{}'.", replayId);
+        log::debug("New mission id is '{}'.", replayId);
         response.data = std::to_string(replayId);
         return response;
     }
@@ -388,11 +388,11 @@ namespace {
         for (const auto& request : requests) {
             hasPoison = hasPoison || request.command == REQUEST_COMMAND_POISON;
             auto paramsSize = request.params.size();
-            log::logger->trace("Request command '{}' params size '{}'!", request.command, request.params.size());
+            log::trace("Request command '{}' params size '{}'!", request.command, request.params.size());
             if (request.command == "update_mission" && paramsSize == 2) {
                 uint32_t replayId = parseUnsigned(request.params[0]);
                 uint32_t missionTime = parseUnsigned(request.params[1]);
-                log::logger->debug("Updating 'missions' values last_mission_time '{}', id '{}'.", missionTime, replayId);
+                log::debug("Updating 'missions' values last_mission_time '{}', id '{}'.", missionTime, replayId);
                 query << fmt::format("UPDATE missions SET last_event_time = UTC_TIMESTAMP(), last_mission_time = {} WHERE id = {} LIMIT 1;", missionTime, replayId);
             }
             else if (request.command == "infantry" && paramsSize == 13) {
@@ -423,7 +423,7 @@ namespace {
                 processEventsMissileCommand(eventsMissileQuery, request.params);
             }
             else {
-                log::logger->debug("Invlaid command type '{}' with param size '{}'!", request.command, request.params.size());
+                log::debug("Invlaid command type '{}' with param size '{}'!", request.command, request.params.size());
             }
         }
         tryConcatenateQueries(query, infantryQuery, "INSERT INTO infantry(mission, player_id, entity_id, name, faction, class, `group`, leader, icon, weapon, launcher, data, mission_time) VALUES ");
@@ -435,7 +435,7 @@ namespace {
         tryConcatenateQueries(query, eventsProjectileQuery, "INSERT INTO events_projectile(mission, mission_time, type, entity_attacker, x, y, projectile_name) VALUES ");
         tryConcatenateQueries(query, eventsDownedQuery, "INSERT INTO events_downed(mission, mission_time, type, entity_attacker, entity_victim, attacker_vehicle, same_faction, distance, weapon) VALUES ");
         tryConcatenateQueries(query, eventsMissileQuery, "INSERT INTO events_missile(mission, mission_time, type, entity_attacker, entity_victim, weapon) VALUES ");
-        log::logger->trace("Multi statement query: {}", query.str());
+        log::trace("Multi statement query: {}", query.str());
         executeMultiStatementQuery(query);
         return hasPoison;
     }
