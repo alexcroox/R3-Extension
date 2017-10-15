@@ -31,7 +31,6 @@ namespace r3 {
 
 namespace extension {
 
-    bool initialize();
     void finalize();
     int call(char *output, int outputSize, const char *function, const char **args, int argCount);
     Request popRequest();

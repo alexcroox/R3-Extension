@@ -274,15 +274,6 @@ namespace {
         query << "),";
     }
 
-    bool initialize(const std::string& host_, uint32_t port_, const std::string& database_, const std::string& user_, const std::string& password_) {
-        host = host_;
-        port = port_;
-        database = database_;
-        user = user_;
-        password = password_;
-        return true;
-    }
-
     void finalize() {
         mysql_close(connection);
     }
@@ -318,7 +309,7 @@ namespace {
         return connected;
     }
 
-    std::string connect() {
+    std::string connect(const std::string& host, uint32_t port, const std::string& database, const std::string& user, const std::string& password) {
         if (connected) { return ""; }
         log::info("Connecting to MySQL server at '{}@{}:{}/{}'.", user, host, port, database);
         connected = false;

@@ -38,12 +38,21 @@ namespace {
     }
 }
 
-    inline bool initialize(const std::string& extensionFolder, const std::string& logLevel) {
-        logger = spdlog::rotating_logger_mt(LOGGER_NAME, fmt::format("{}{}{}", extensionFolder, os::pathSeparator, getLogFileName()), 1024 * 1024 * 20, 1);
+    inline std::string initialize(const std::string& extensionFolder, const std::string& logLevel) {
+        if (initialized) { return ""; }
+        try {
+            logger = spdlog::rotating_logger_mt(LOGGER_NAME, fmt::format("{}{}{}", extensionFolder, os::pathSeparator, getLogFileName()), 1024 * 1024 * 20, 1);
+        } catch (const std::exception& e) {
+            return e.what();
+        }
         logger->flush_on(spdlog::level::trace);
         logger->set_level(getLogLevel(logLevel));
         initialized = true;
-        return true;
+        return "";
+    }
+
+    inline void setLogLevel(const std::string& logLevel) {
+        logger->set_level(getLogLevel(logLevel));
     }
 
     template <typename... Args> inline void trace(const char* fmt, const Args&... args) {

@@ -14,12 +14,11 @@ namespace r3 {
 
 namespace sql {
 
-    bool initialize(const std::string& host_, uint32_t port_, const std::string& database_, const std::string& user_, const std::string& password_);
     void finalize();
     void run();
     std::mutex& getSessionMutex();
     bool isConnected();
-    std::string connect();
+    std::string connect(const std::string& host, uint32_t port, const std::string& database, const std::string& user, const std::string& password);
     Response processCreateMissionRequest(const Request& request);
     bool processRequests(const std::vector<Request>& requests);
 

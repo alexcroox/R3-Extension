@@ -12,7 +12,6 @@
 BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
     switch (fdwReason) {
     case DLL_PROCESS_ATTACH:
-        r3::extension::initialize();
         break;
 
     case DLL_PROCESS_DETACH:
@@ -61,11 +60,6 @@ int RVExtensionArgs(char *output, int outputSize, const char *function, const ch
     return r3::extension::call(output, outputSize, function, args, argCnt);
 }
 
-__attribute__((constructor))
-static void extension_init() {
-    r3::extension::initialize();
-}
-
 __attribute__((destructor))
 static void extension_finalize() {
     r3::extension::finalize();
@@ -86,7 +80,6 @@ int main(int argc, char* argv[]) {
     std::regex commandSeparatorRegex("~");
     std::regex paramSeparatorRegex("`");
 
-    r3::extension::initialize();
     std::cout
         << "Type 'exit' to close console." << std::endl
         << "Use it as <command>~<param1>`<param2>`<param3>... (No support for escaping '~' and '`')" << std::endl

@@ -8,12 +8,12 @@ namespace r3 {
 namespace config {
 
 namespace {
-    std::string logLevel;
-    std::string dbHost;
-    uint32_t dbPort;
-    std::string dbDatabase;
-    std::string dbUsername;
-    std::string dbPassword;
+    std::string logLevel = "info";
+    std::string dbHost = "";
+    uint32_t dbPort = 0;
+    std::string dbDatabase = "";
+    std::string dbUsername = "";
+    std::string dbPassword = "";
 }
 
     std::string getConfigValue(std::unordered_map<std::string, std::string>& configs, const std::string& key, std::string& configErrors) {

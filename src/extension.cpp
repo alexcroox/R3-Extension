@@ -15,13 +15,23 @@ namespace r3 {
 namespace extension {
 
 namespace {
+    const std::string SUCCESSFULL_INIT = "successfull_init";
+    const std::string EXTENSION_FOLDER_DOES_NOT_EXIST = "extension_folder_does_not_exist";
+    const std::string CANNOT_CREATE_LOG_FILE = "cannot_create_log_file";
+    const std::string MISSING_CONFIG_FILE = "missing_config_file";
+    const std::string CONFIG_FILE_ERROR = "config_file_error";
+
+    struct InitResult {
+        std::string code;
+        std::string message;
+    };
+
     const std::string EXTENSION_FOLDER_ENV_VAR = "R3_EXTENSION_HOME";
     const std::string EXTENSION_FOLDER = "R3Extension";
     const std::string CONFIG_FILE = "config.properties";
 
     Queue<Request> requests;
     std::thread sqlThread;
-    std::string configError = "";
 }
 
     void respond(char* output, const std::string& data) {
@@ -29,7 +39,7 @@ namespace {
         output[data.length()] = '\0';
     }
 
-    std::string getExtensionFolder() {
+    std::string getDefaultExtensionFolder() {
         std::string extensionFolder = os::getEnvironmentVariableValue(EXTENSION_FOLDER_ENV_VAR, ".");
         if (extensionFolder == ".") {
 #ifdef _WIN32
@@ -56,42 +66,29 @@ namespace {
         }
     }
 
-    bool initialize() {
-        std::string extensionFolder(getExtensionFolder());
+    InitResult initializeFromFolder(const std::string& extensionFolder) {
         if (!os::directoryExists(extensionFolder)) {
-            std::string message = fmt::format("Extension folder doesn't exist at '{}'!", extensionFolder);
-            configError += message;
-            return false;
+            return { EXTENSION_FOLDER_DOES_NOT_EXIST, fmt::format("Extension folder doesn't exist at '{}'!", extensionFolder) };
         }
-
+        std::string logLevel = "info";
+        std::string error = log::initialize(extensionFolder, logLevel);
+        if (!error.empty()) {
+            return { CANNOT_CREATE_LOG_FILE, error };
+        }
         std::string configFile(fmt::format("{}{}{}", extensionFolder, os::pathSeparator, CONFIG_FILE));
         if (!os::fileExists(configFile)) {
             std::string message = fmt::format("Config file is missing from '{}'!", configFile);
-            configError += message;
-            log::initialize(extensionFolder, "info");
             log::error(message);
-            return false;
+            return { MISSING_CONFIG_FILE, message };
         }
-
         std::string errors = config::readConfigFile(configFile);
         if (!errors.empty()) {
-            configError += errors;
-            log::initialize(extensionFolder, "info");
-            log::error(configError);
-            return false;
+            log::error(errors);
+            return { CONFIG_FILE_ERROR, errors };
         }
-
-        std::string logLevel = config::getLogLevel();
-        log::initialize(extensionFolder, logLevel);
-        std::string host = config::getDbHost();
-        uint32_t port = config::getDbPort();
-        std::string database = config::getDbDatabase();
-        std::string user = config::getDbUsername();
-        std::string password = config::getDbPassword();
-        sql::initialize(host, port, database, user, password);
-
-        log::info("Starting r3_extension version '{}'.", R3_EXTENSION_VERSION);
-        return true;
+        log::setLogLevel(config::getLogLevel());
+        log::info("Initialized r3_extension version '{}'.", R3_EXTENSION_VERSION);
+        return { SUCCESSFULL_INIT , "" };
     }
 
     void finalize() {
@@ -104,10 +101,6 @@ namespace {
     }
 
     int call(char *output, int outputSize, const char *function, const char **args, int argCount) {
-        if (!configError.empty()) {
-            respond(output, fmt::format("\"{}\"", configError));
-            return RESPONSE_RETURN_CODE_ERROR;
-        }
         Request request{ "" };
         request.command = std::string(function);
         request.params.insert(request.params.end(), args, args + argCount);
@@ -117,12 +110,32 @@ namespace {
             respond(output, fmt::format("\"{}\"", R3_EXTENSION_VERSION));
             return RESPONSE_RETURN_CODE_OK;
         }
+        else if (request.command == "init") {
+            InitResult result = request.params.empty()
+                ? initializeFromFolder(getDefaultExtensionFolder())
+                : initializeFromFolder(request.params[0]);
+            int responseReturnCode = result.code == SUCCESSFULL_INIT ? RESPONSE_RETURN_CODE_OK : RESPONSE_RETURN_CODE_ERROR;
+            respond(output, fmt::format("[\"{}\", \"{}\"]", result.code, result.message));
+            return responseReturnCode;
+        }
         else if (request.command == "connect") {
             if (sql::isConnected()) {
                 respond(output, "true");
                 return RESPONSE_RETURN_CODE_OK;
             }
-            std::string message = sql::connect();
+            std::string host = config::getDbHost();
+            uint32_t port = config::getDbPort();
+            std::string database = config::getDbDatabase();
+            std::string user = config::getDbUsername();
+            std::string password = config::getDbPassword();
+            if (request.params.size() == 5) {
+                host = request.params[0];
+                port = std::atoi(request.params[1].c_str());
+                database = request.params[2];
+                user = request.params[3];
+                password = request.params[4];
+            }
+            std::string message = sql::connect(host, port, database, user, password);
             if (message.empty()) {
                 sqlThread = std::thread(sql::run);
                 respond(output, "true");
@@ -145,15 +158,15 @@ namespace {
             return RESPONSE_RETURN_CODE_OK;
         }
         else if (
-            request.command == "infantry" || 
-            request.command == "infantry_positions" || 
-            request.command == "vehicles" || 
-            request.command == "vehicle_positions" || 
-            request.command == "events_connections" || 
-            request.command == "events_get_in_out" || 
-            request.command == "events_projectile" || 
-            request.command == "events_downed" || 
-            request.command == "update_mission" || 
+            request.command == "infantry" ||
+            request.command == "infantry_positions" ||
+            request.command == "vehicles" ||
+            request.command == "vehicle_positions" ||
+            request.command == "events_connections" ||
+            request.command == "events_get_in_out" ||
+            request.command == "events_projectile" ||
+            request.command == "events_downed" ||
+            request.command == "update_mission" ||
             request.command == "events_missile") {
 
             log::trace("Pushing request '{}' to queue .", request.command);
