@@ -5,6 +5,7 @@
 #ifdef _WIN32
 #include "shlobj.h"
 #else
+#include <dlfcn.h>
 #include <sys/stat.h>
 #endif
 
@@ -49,6 +50,9 @@ namespace os {
         if (result == MAX_PATH) { return ""; }
         path = std::string(buffer);
 #else
+        Dl_info dlInfo;
+        dladdr((void*)getExtensionLibraryPath, &dlInfo);
+        path = std::string(dlInfo.dli_fname);
 #endif
         auto lastPathSeparatorIndex = path.find_last_of(os::pathSeparator);
         return path.substr(0, lastPathSeparatorIndex);
