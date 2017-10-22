@@ -40,8 +40,8 @@ namespace {
     }
 
     std::string getDefaultExtensionFolder() {
-        std::string extensionFolder = os::getEnvironmentVariableValue(EXTENSION_FOLDER_ENV_VAR, ".");
-        if (extensionFolder == ".") {
+        std::string extensionFolder = os::getEnvironmentVariableValue(EXTENSION_FOLDER_ENV_VAR, "");
+        if (extensionFolder.empty()) {
 #ifdef _WIN32
             PWSTR wpath = nullptr;
             if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &wpath))) {
@@ -53,6 +53,9 @@ namespace {
             extensionFolder = os::getEnvironmentVariableValue("HOME", ".");
 #endif
             extensionFolder += os::pathSeparator + EXTENSION_FOLDER;
+            if (!os::directoryExists(extensionFolder)) {
+                return os::getExtensionLibraryPath();
+            }
         }
         return extensionFolder;
     }

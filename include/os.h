@@ -15,6 +15,7 @@ namespace os {
     std::string getEnvironmentVariableValue(const std::string& name, const std::string& defaultValue = "");
     bool directoryExists(const std::string& directory);
     bool fileExists(const std::string& file);
+    std::string getExtensionLibraryPath();
 
 } // namespace os
 } // namespace r3

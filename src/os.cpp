@@ -38,5 +38,21 @@ namespace os {
         return std::ifstream(file.c_str()).good();
     }
 
+    std::string getExtensionLibraryPath() {
+        std::string path;
+#ifdef _WIN32
+        HMODULE moduleHandle;
+        auto successful = GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)getExtensionLibraryPath, &moduleHandle);
+        if (!successful) { return ""; }
+        char buffer[MAX_PATH];
+        auto result = GetModuleFileName(moduleHandle, buffer, MAX_PATH);
+        if (result == MAX_PATH) { return ""; }
+        path = std::string(buffer);
+#else
+#endif
+        auto lastPathSeparatorIndex = path.find_last_of(os::pathSeparator);
+        return path.substr(0, lastPathSeparatorIndex);
+    }
+
 } // namespace os
 } // namespace r3
