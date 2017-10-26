@@ -7,7 +7,7 @@
 #include "shlobj.h"
 #endif
 
-#include "log.hpp"
+#include "log.h"
 #include "os.h"
 #include "config.h"
 

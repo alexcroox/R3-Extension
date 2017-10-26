@@ -3,7 +3,7 @@
 #include <chrono>
 
 #include "extension.h"
-#include "log.hpp"
+#include "log.h"
 
 #include "my_global.h"
 #include "mysql.h"

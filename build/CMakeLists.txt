@@ -15,11 +15,12 @@ PROJECT (r3_extension)
 SET(SOURCES
     ../include/config.h
     ../include/extension.h
-    ../include/log.hpp
+    ../include/log.h
     ../include/sql.h
     ../include/os.h
     ../src/config.cpp
     ../src/extension.cpp
+    ../src/log.cpp
     ../src/sql.cpp
     ../src/main.cpp
     ../src/os.cpp

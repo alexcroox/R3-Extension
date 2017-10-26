@@ -1,5 +1,5 @@
 #include "config.h"
-#include "log.hpp"
+#include "log.h"
 
 #include <fstream>
 #include <sstream>
