@@ -8,15 +8,12 @@
 #include "my_global.h"
 #include "mysql.h"
 
-
 #define ESCAPE_BUFFER_MAX_STRING_LENGTH 350
 
 namespace r3 {
 namespace sql {
 
 namespace {
-    std::string host, database, user, password;
-    uint32_t port;
     MYSQL* connection;
     char escapeBuffer[ESCAPE_BUFFER_MAX_STRING_LENGTH * 2 + 1]; // vehicle_positions.cargo is the biggest string field with varchar(350). According to the docs of mysql_real_escape_string, we need length * 2 + 1 bytes for the buffer.
     std::mutex sessionMutex;
