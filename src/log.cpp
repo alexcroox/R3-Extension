@@ -10,7 +10,7 @@ namespace log {
 
 namespace {
     const std::string LOGGER_NAME = "r3_extension_log";
-    std::atomic<bool> initialized = false;
+    std::atomic<bool> initialized(false);
 }
 
     std::shared_ptr<spdlog::logger> logger;
